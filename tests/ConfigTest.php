@@ -11,7 +11,7 @@ use Myerscode\Config\Exceptions\ConfigException;
 class ConfigTest extends TestCase
 {
 
-    function testConfigParsesFile()
+    public function testConfigParsesFile()
     {
         /**
          * @var $config Config
@@ -20,56 +20,62 @@ class ConfigTest extends TestCase
 
         $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
 
-        $this->assertEquals([
-            'test' => 'value',
-            'setting' => [
-                'a',
-                'b',
-                'c',
+        $this->assertEquals(
+            [
+                'test' => 'value',
+                'setting' => [
+                    'a',
+                    'b',
+                    'c',
+                ],
+                'Config' => [
+                    'foo' => 'bar',
+                    'hello' => 'world',
+                ],
             ],
-            'Config' => [
-                'foo' => 'bar',
-                'hello' => 'world',
-            ]
-        ],
-            $config->all());
+            $config->all()
+        );
     }
 
-    function testConfigResolvesNestedVariables()
+    public function testConfigResolvesNestedVariables()
     {
         $config = $this->mock(Config::class)->makePartial();
 
         $config->loadFromFile($this->resourceFilePath('/Resources/nested-config.php'));
 
-        $this->assertEquals([
-            'foo' => 'bar',
-            'world' => 'hello',
-            'nested' => [
-                'foobar' => 'foobar',
-                'deeper' => [
-                    'setting' => 'hello world',
+        $this->assertEquals(
+            [
+                'foo' => 'bar',
+                'world' => 'hello',
+                'nested' => [
+                    'foobar' => 'foobar',
+                    'deeper' => [
+                        'setting' => 'hello world',
+                    ],
                 ],
+                'dotaccessor' => 'hello world',
             ],
-            'dotaccessor' => 'hello world',
-        ],
-            $config->all());
+            $config->all()
+        );
     }
 
-    function testConfigLeavesUnknownReferences()
+    public function testConfigLeavesUnknownReferences()
     {
         $config = $this->mock(Config::class)->makePartial();
 
         $config->loadFromFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
 
-        $this->assertEquals([
-            'foo' => 'bar',
-            'hello' => 'world',
-            'ref' => '${invalid}',
-        ],
-            $config->all());
+        $this->assertEquals(
+            [
+                'foo' => 'bar',
+                'hello' => 'world',
+                'ref' => '${invalid}',
+            ],
+            $config->all()
+        );
     }
 
-    function testConfigFindsValues()
+    public function testConfigFindsValues()
     {
         $config = $this->mock(Config::class)->makePartial();
 
@@ -81,7 +87,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('world', $config->get('Config.hello'));
     }
 
-    function testConfigHandlesInfiniteRecursion()
+    public function testConfigHandlesInfiniteRecursion()
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
@@ -89,7 +95,7 @@ class ConfigTest extends TestCase
         $config->loadFromFile($this->resourceFilePath('/Resources/recursion-config.php'));
     }
 
-    function testConfigHandlesNoneStringReference()
+    public function testConfigHandlesNoneStringReference()
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
@@ -97,7 +103,7 @@ class ConfigTest extends TestCase
         $config->loadFromFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
     }
 
-    function testConfigHandlesConfigFileNotExisting()
+    public function testConfigHandlesConfigFileNotExisting()
     {
         $config = $this->mock(Config::class)->makePartial();
         $config->loadFromFile('foobar.php');

@@ -19,7 +19,7 @@ class TestCase extends PhpUnit
 
     public function resourceFilePath($fileName = '')
     {
-        return __DIR__.$fileName;
+        return __DIR__ . $fileName;
     }
 
     public function tearDown(): void
