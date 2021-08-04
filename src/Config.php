@@ -3,50 +3,65 @@
 namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
-use Myerscode\Utilities\Bags\DotUtility;
+use Myerscode\Utilities\Files\Utility as FileService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Config
 {
-    const MAX_RECURSION_LOOPS = 100;
+    public const MAX_RECURSION_LOOPS = 25;
 
-    private FileService $fileService;
+    private static ?Store $store = null;
 
-    private DotUtility $dot;
-
-    private DotUtility $recursionCounter;
+    private Store $recursionCounter;
 
     public function __construct()
     {
-        $this->fileService = new FileService();
-        $this->dot = new DotUtility([]);
+        $this->createStore();
         $this->resetCounter();
+    }
+
+    public static function make(): Config
+    {
+        return new self();
+    }
+
+    public static function reset(): void
+    {
+        self::$store = null;
+        self::make();
+    }
+
+    protected function createStore(): void
+    {
+        if (!isset(self::$store)) {
+            self::$store = new Store([]);
+        }
     }
 
     protected function resetCounter(): void
     {
         unset($this->recursionCounter);
-        $this->recursionCounter = new DotUtility([]);
+        $this->recursionCounter = new Store([]);
     }
 
     protected function parseConfigArray($config): array
     {
         $this->resetCounter();
 
-        return $this->resolveVariables(new DotUtility($config));
+        return $this->resolveVariables(new Store($config));
     }
 
     protected function serializeArray(array $array)
     {
-        return (new JsonEncode)->encode(
+        return (new JsonEncode())->encode(
             $array,
             JsonEncoder::FORMAT,
             ['json_encode_Config' => 194]
         );
     }
 
-    private function resolveVariables(DotUtility $repo)
+    private function resolveVariables(Store $repo)
     {
         $configTemplate = $this->serializeArray($repo->toArray());
 
@@ -55,26 +70,27 @@ class Config
         return (new JsonEncoder())->decode($updatedTemplate, JsonEncoder::FORMAT);
     }
 
-    private function resolveValues($template, DotUtility $repo)
+    private function resolveValues($template, Store $repo)
     {
         return preg_replace_callback('/\${([a-zA-Z0-9_.]+)}/', function (array $matches) use ($repo) {
             return $this->resolveConfigValue($matches[1], $repo) ?? $matches[0];
         }, $template);
     }
 
-    private function resolveConfigValue(string $key, DotUtility $repo)
+    private function resolveConfigValue(string $key, Store $repo)
     {
         $this->recursionCounter->set($key, $this->recursionCounter->get($key, 0) + 1);
 
         if ($this->recursionCounter->get($key) >= Config::MAX_RECURSION_LOOPS) {
-            throw new ConfigException("Config key {$key} is referencing a value which has a caused a recursion error");
+            throw new ConfigException("Config key $key is referencing a value which has a caused a recursion error");
         }
 
-        $value = $repo->get($key, null);
+        $value = $repo->get($key);
 
         if (is_null($value)) {
             return null;
         }
+
         if (!is_string($value)) {
             throw new ConfigException("A config value can only reference another string");
         }
@@ -82,18 +98,28 @@ class Config
         return $this->resolveValues($value, $repo);
     }
 
-    public function loadFromFile(string $file)
+    public function loadFiles(array $files): void
     {
-        if ($this->fileService->does($file)->exists()) {
-            $settings = $this->loadFile($file);
+        $settings = [];
+        foreach ($files as $file) {
+            $settings = array_merge($settings, $this->readFile($file));
+        }
+        $config = $this->parseConfigArray($settings);
+        self::$store = self::$store->mergeRecursively($config);
+    }
+
+    public function loadFile(string $file): void
+    {
+        if (FileService::make($file)->exists()) {
+            $settings = $this->readFile($file);
             $config = $this->parseConfigArray($settings);
-            $this->dot = $this->dot->mergeRecursively($config);
+            self::$store = self::$store->mergeRecursively($config);
         }
     }
 
-    protected function loadFile(string $filename): array
+    protected function readFile(string $filename): array
     {
-        if (!$this->fileService->does($filename)->exists()) {
+        if (!FileService::make($filename)->exists()) {
             return [];
         }
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
@@ -107,13 +133,29 @@ class Config
         return [];
     }
 
-    public function all(): array
+    /**
+     * @return Store
+     */
+    public static function store(): Store
     {
-        return $this->dot->toArray();
+        return self::$store;
     }
 
-    public function get(string $key)
+    /**
+     * @return array
+     */
+    public function values(): array
     {
-        return $this->dot->get($key);
+        return $this->store()->toArray();
+    }
+
+    /**
+     * @param  string  $key
+     *
+     * @return array|mixed|null
+     */
+    public function value(string $key): mixed
+    {
+        return $this->store()->get($key);
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Mockery;
+use Myerscode\Config\Config;
 use PHPUnit\Framework\TestCase as PhpUnit;
 
 class TestCase extends PhpUnit
@@ -19,7 +20,12 @@ class TestCase extends PhpUnit
 
     public function resourceFilePath($fileName = '')
     {
-        return __DIR__.$fileName;
+        return __DIR__ . $fileName;
+    }
+
+    protected function setUp(): void
+    {
+        Config::reset();
     }
 
     public function tearDown(): void

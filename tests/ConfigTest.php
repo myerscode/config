@@ -11,96 +11,102 @@ use Myerscode\Config\Exceptions\ConfigException;
 class ConfigTest extends TestCase
 {
 
-    function testConfigParsesFile()
+    public function testConfigParsesFile()
     {
         /**
          * @var $config Config
          */
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
-        $this->assertEquals([
-            'test' => 'value',
-            'setting' => [
-                'a',
-                'b',
-                'c',
-            ],
-            'Config' => [
-                'foo' => 'bar',
-                'hello' => 'world',
-            ]
-        ],
-            $config->all());
-    }
-
-    function testConfigResolvesNestedVariables()
-    {
-        $config = $this->mock(Config::class)->makePartial();
-
-        $config->loadFromFile($this->resourceFilePath('/Resources/nested-config.php'));
-
-        $this->assertEquals([
-            'foo' => 'bar',
-            'world' => 'hello',
-            'nested' => [
-                'foobar' => 'foobar',
-                'deeper' => [
-                    'setting' => 'hello world',
+        $this->assertEquals(
+            [
+                'test' => 'value',
+                'setting' => [
+                    'a',
+                    'b',
+                    'c',
+                ],
+                'Config' => [
+                    'foo' => 'bar',
+                    'hello' => 'world',
                 ],
             ],
-            'dotaccessor' => 'hello world',
-        ],
-            $config->all());
+            $config->values()
+        );
     }
 
-    function testConfigLeavesUnknownReferences()
+    public function testConfigResolvesNestedVariables()
     {
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/nested-config.php'));
 
-        $this->assertEquals([
-            'foo' => 'bar',
-            'hello' => 'world',
-            'ref' => '${invalid}',
-        ],
-            $config->all());
+        $this->assertEquals(
+            [
+                'foo' => 'bar',
+                'world' => 'hello',
+                'nested' => [
+                    'foobar' => 'foobar',
+                    'deeper' => [
+                        'setting' => 'hello world',
+                    ],
+                ],
+                'dotaccessor' => 'hello world',
+            ],
+            $config->values()
+        );
     }
 
-    function testConfigFindsValues()
+    public function testConfigLeavesUnknownReferences()
     {
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
 
-        $this->assertEquals('value', $config->get('test'));
-        $this->assertEquals(['a', 'b', 'c'], $config->get('setting'));
-        $this->assertEquals('a', $config->get('setting.0'));
-        $this->assertEquals('world', $config->get('Config.hello'));
+        $this->assertEquals(
+            [
+                'foo' => 'bar',
+                'hello' => 'world',
+                'ref' => '${invalid}',
+            ],
+            $config->values()
+        );
     }
 
-    function testConfigHandlesInfiniteRecursion()
+    public function testConfigFindsValues()
+    {
+        $config = $this->mock(Config::class)->makePartial();
+
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
+
+        $this->assertEquals('value', $config->value('test'));
+        $this->assertEquals(['a', 'b', 'c'], $config->value('setting'));
+        $this->assertEquals('a', $config->value('setting.0'));
+        $this->assertEquals('world', $config->value('Config.hello'));
+    }
+
+    public function testConfigHandlesInfiniteRecursion()
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage("Config key hello is referencing a value which has a caused a recursion error");
-        $config->loadFromFile($this->resourceFilePath('/Resources/recursion-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/recursion-config.php'));
     }
 
-    function testConfigHandlesNoneStringReference()
+    public function testConfigHandlesNoneStringReference()
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage("A config value can only reference another string");
-        $config->loadFromFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
     }
 
-    function testConfigHandlesConfigFileNotExisting()
+    public function testConfigHandlesConfigFileNotExisting()
     {
         $config = $this->mock(Config::class)->makePartial();
-        $config->loadFromFile('foobar.php');
-        $this->assertEquals([], $config->all());
+        $config->loadFile('foobar.php');
+        $this->assertEquals([], $config->values());
     }
 }

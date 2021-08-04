@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^8.0",
         "myerscode/utilities-bags": "^1.2",
         "myerscode/utilities-files": "^1.0",
         "symfony/serializer": "^5.2"
@@ -23,7 +23,10 @@
     "autoload": {
         "psr-4": {
             "Myerscode\\Config\\": "src/"
-        }
+        },
+        "files": [
+            "src/global.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -38,6 +41,7 @@
     "scripts": {
         "tests": "vendor/bin/phpunit --testdox --colors=always",
         "test-coverage": "vendor/bin/phpunit --testdox --colors=always --coverage-html coverage",
-        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12"
+        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12",
+        "phpcbf": "vendor/bin/phpcbf"
     }
 }

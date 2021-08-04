@@ -2,6 +2,6 @@
 <ruleset name="PHP_CodeSniffer">
     <description>PHPCS configuration file.</description>
     <file>src</file>
-    <file>test</file>
+    <file>tests</file>
     <rule ref="PSR12"/>
 </ruleset>
