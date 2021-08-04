@@ -4,7 +4,7 @@
 [![Latest Stable Version](https://poser.pugx.org/myerscode/config/v/stable)](https://packagist.org/packages/myerscode/config)
 [![Total Downloads](https://poser.pugx.org/myerscode/config/downloads)](https://packagist.org/packages/myerscode/config)
 [![License](https://poser.pugx.org/myerscode/config/license)](https://packagist.org/packages/myerscode/config)
-![Tests](https://github.com/myerscode/config/workflows/Tests/badge.svg?branch=master)
+![Tests](https://github.com/myerscode/config/workflows/Tests/badge.svg?branch=main)
 
 ## Why this package is helpful?
 
