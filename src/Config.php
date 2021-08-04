@@ -154,7 +154,7 @@ class Config
      *
      * @return array|mixed|null
      */
-    public function get(string $key): mixed
+    public function value(string $key): mixed
     {
         return $this->store()->get($key);
     }

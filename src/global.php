@@ -9,7 +9,7 @@ if (!function_exists('config')) {
     function config(string $key = null): mixed
     {
         if ($key) {
-            return \Myerscode\Config\Config::make()->get($key);
+            return \Myerscode\Config\Config::make()->value($key);
         }
 
         return \Myerscode\Config\Config::make()->values();

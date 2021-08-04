@@ -81,10 +81,10 @@ class ConfigTest extends TestCase
 
         $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
-        $this->assertEquals('value', $config->get('test'));
-        $this->assertEquals(['a', 'b', 'c'], $config->get('setting'));
-        $this->assertEquals('a', $config->get('setting.0'));
-        $this->assertEquals('world', $config->get('Config.hello'));
+        $this->assertEquals('value', $config->value('test'));
+        $this->assertEquals(['a', 'b', 'c'], $config->value('setting'));
+        $this->assertEquals('a', $config->value('setting.0'));
+        $this->assertEquals('world', $config->value('Config.hello'));
     }
 
     public function testConfigHandlesInfiniteRecursion()
