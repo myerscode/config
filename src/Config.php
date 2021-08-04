@@ -10,16 +10,34 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Config
 {
-    public const MAX_RECURSION_LOOPS = 100;
+    public const MAX_RECURSION_LOOPS = 25;
 
-    private Store $store;
+    private static ?Store $store = null;
 
     private Store $recursionCounter;
 
     public function __construct()
     {
-        $this->store = new Store([]);
+        $this->createStore();
         $this->resetCounter();
+    }
+
+    public static function make(): Config
+    {
+        return new self();
+    }
+
+    public static function reset(): void
+    {
+        self::$store = null;
+        self::make();
+    }
+
+    protected function createStore(): void
+    {
+        if (!isset(self::$store)) {
+            self::$store = new Store([]);
+        }
     }
 
     protected function resetCounter(): void
@@ -86,7 +104,7 @@ class Config
         if (FileService::make($file)->exists()) {
             $settings = $this->loadFile($file);
             $config = $this->parseConfigArray($settings);
-            $this->store = $this->store->mergeRecursively($config);
+            self::$store = self::$store->mergeRecursively($config);
         }
     }
 
@@ -106,13 +124,29 @@ class Config
         return [];
     }
 
-    public function all(): array
+    /**
+     * @return Store
+     */
+    public function store(): Store
     {
-        return $this->store->toArray();
+        return self::$store;
     }
 
+    /**
+     * @return array
+     */
+    public function all(): array
+    {
+        return $this->store()->toArray();
+    }
+
+    /**
+     * @param  string  $key
+     *
+     * @return array|mixed|null
+     */
     public function get(string $key)
     {
-        return $this->store->get($key);
+        return $this->store()->get($key);
     }
 }

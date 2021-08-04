@@ -23,7 +23,10 @@
     "autoload": {
         "psr-4": {
             "Myerscode\\Config\\": "src/"
-        }
+        },
+        "files": [
+            "src/global.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
