@@ -14,7 +14,7 @@ class HelperTest extends TestCase
     {
         $config = new Config();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
         $this->assertEquals(
             [
@@ -37,7 +37,7 @@ class HelperTest extends TestCase
     {
         $config = new Config();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
         $this->assertEquals(
             [

@@ -18,7 +18,7 @@ class ConfigTest extends TestCase
          */
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
         $this->assertEquals(
             [
@@ -41,7 +41,7 @@ class ConfigTest extends TestCase
     {
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/nested-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/nested-config.php'));
 
         $this->assertEquals(
             [
@@ -63,7 +63,7 @@ class ConfigTest extends TestCase
     {
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
 
         $this->assertEquals(
             [
@@ -79,7 +79,7 @@ class ConfigTest extends TestCase
     {
         $config = $this->mock(Config::class)->makePartial();
 
-        $config->loadFromFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
         $this->assertEquals('value', $config->get('test'));
         $this->assertEquals(['a', 'b', 'c'], $config->get('setting'));
@@ -92,7 +92,7 @@ class ConfigTest extends TestCase
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage("Config key hello is referencing a value which has a caused a recursion error");
-        $config->loadFromFile($this->resourceFilePath('/Resources/recursion-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/recursion-config.php'));
     }
 
     public function testConfigHandlesNoneStringReference()
@@ -100,13 +100,13 @@ class ConfigTest extends TestCase
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage("A config value can only reference another string");
-        $config->loadFromFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
+        $config->loadFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
     }
 
     public function testConfigHandlesConfigFileNotExisting()
     {
         $config = $this->mock(Config::class)->makePartial();
-        $config->loadFromFile('foobar.php');
+        $config->loadFile('foobar.php');
         $this->assertEquals([], $config->values());
     }
 }

@@ -102,22 +102,22 @@ class Config
     {
         $settings = [];
         foreach ($files as $file) {
-            $settings = array_merge($settings, $this->loadFile($file));
+            $settings = array_merge($settings, $this->readFile($file));
         }
         $config = $this->parseConfigArray($settings);
         self::$store = self::$store->mergeRecursively($config);
     }
 
-    public function loadFromFile(string $file): void
+    public function loadFile(string $file): void
     {
         if (FileService::make($file)->exists()) {
-            $settings = $this->loadFile($file);
+            $settings = $this->readFile($file);
             $config = $this->parseConfigArray($settings);
             self::$store = self::$store->mergeRecursively($config);
         }
     }
 
-    protected function loadFile(string $filename): array
+    protected function readFile(string $filename): array
     {
         if (!FileService::make($filename)->exists()) {
             return [];
