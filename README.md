@@ -1,5 +1,5 @@
 #  Config
-> A PHP utility that creates a configuration object from multi file, cross-referencing array maps
+> A PHP utility that creates a configuration object from multi file, cross-referencing php array maps or yaml files
 
 [![Latest Stable Version](https://poser.pugx.org/myerscode/config/v/stable)](https://packagist.org/packages/myerscode/config)
 [![Total Downloads](https://poser.pugx.org/myerscode/config/downloads)](https://packagist.org/packages/myerscode/config)
@@ -9,7 +9,7 @@
 ## Why this package is helpful?
 
 This package will allow you to build a config object, that you can simply retrieve values from. You manage configuration 
-across multiple files, with the ability to cross-reference properties in order to build up complex values.
+across multiple PHP or YAML files, with the ability to cross-reference properties in order to build up complex values.
 
 ## Install
 
@@ -21,19 +21,19 @@ composer require myerscode/config
 
 ## Usage
 
-## Creating store
+
+### Creating store
 The config data store is static, so all you need to do is start loading values into it
 ```php
 (new Config())->loadFiles([
 'app.config.php',
-'db.config.php',
+'db.config.yaml',
 ]);
 
 (new Config())->loadFile('cache.config.php');
 ```
 
 ### Retrieving a value
-
 ```php
 // class instance
 $config = (new Config())->value('app.name');
@@ -42,9 +42,7 @@ $config = (new Config())->value('app.name');
 $config = config('app.name');
 ```
 
-
 ### Get all store value
-
 ```php
 // class instance
 $config = (new Config())->values();
@@ -52,7 +50,6 @@ $config = (new Config())->values();
 // helper function
 $config = config();
 ```
-
 
 ### Accessing the store
 As the store is static, accessing the values can be done simply by calling the `store` helper or using the helper without a key.

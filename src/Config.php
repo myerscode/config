@@ -6,6 +6,7 @@ use Myerscode\Config\Exceptions\ConfigException;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Yaml\Yaml;
 
 class Config
 {
@@ -129,7 +130,12 @@ class Config
                 return $settings;
             }
         }
-
+        if ($extension === 'yaml' || $extension === 'yml') {
+            $settings = Yaml::parseFile($filename);
+            if (is_array($settings)) {
+                return $settings;
+            }
+        }
         return [];
     }
 
