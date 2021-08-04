@@ -33,7 +33,7 @@ class ConfigTest extends TestCase
                     'hello' => 'world',
                 ],
             ],
-            $config->all()
+            $config->values()
         );
     }
 
@@ -55,7 +55,7 @@ class ConfigTest extends TestCase
                 ],
                 'dotaccessor' => 'hello world',
             ],
-            $config->all()
+            $config->values()
         );
     }
 
@@ -71,7 +71,7 @@ class ConfigTest extends TestCase
                 'hello' => 'world',
                 'ref' => '${invalid}',
             ],
-            $config->all()
+            $config->values()
         );
     }
 
@@ -107,6 +107,6 @@ class ConfigTest extends TestCase
     {
         $config = $this->mock(Config::class)->makePartial();
         $config->loadFromFile('foobar.php');
-        $this->assertEquals([], $config->all());
+        $this->assertEquals([], $config->values());
     }
 }

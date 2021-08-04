@@ -12,6 +12,6 @@ if (!function_exists('config')) {
             return \Myerscode\Config\Config::make()->get($key);
         }
 
-        return \Myerscode\Config\Config::make()->all();
+        return \Myerscode\Config\Config::make()->values();
     }
 }

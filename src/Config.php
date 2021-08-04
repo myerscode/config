@@ -3,7 +3,6 @@
 namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
-use Myerscode\Utilities\Bags\DotUtility as Store;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -99,6 +98,16 @@ class Config
         return $this->resolveValues($value, $repo);
     }
 
+    public function loadFiles(array $files): void
+    {
+        $settings = [];
+        foreach ($files as $file) {
+            $settings = array_merge($settings, $this->loadFile($file));
+        }
+        $config = $this->parseConfigArray($settings);
+        self::$store = self::$store->mergeRecursively($config);
+    }
+
     public function loadFromFile(string $file): void
     {
         if (FileService::make($file)->exists()) {
@@ -127,7 +136,7 @@ class Config
     /**
      * @return Store
      */
-    public function store(): Store
+    public static function store(): Store
     {
         return self::$store;
     }
@@ -135,7 +144,7 @@ class Config
     /**
      * @return array
      */
-    public function all(): array
+    public function values(): array
     {
         return $this->store()->toArray();
     }
@@ -145,7 +154,7 @@ class Config
      *
      * @return array|mixed|null
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->store()->get($key);
     }
