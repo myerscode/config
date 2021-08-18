@@ -4,9 +4,6 @@ namespace Tests;
 
 use Myerscode\Config\Config;
 
-/**
- * @covers \Myerscode\Config\Config
- */
 class HelperTest extends TestCase
 {
 

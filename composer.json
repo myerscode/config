@@ -13,7 +13,8 @@
         "php": "^8.0",
         "myerscode/utilities-bags": "^1.2",
         "myerscode/utilities-files": "^1.0",
-        "symfony/serializer": "^5.2"
+        "symfony/serializer": "^5.2",
+        "symfony/yaml": "^5.3"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
@@ -39,8 +40,8 @@
         "sort-packages": true
     },
     "scripts": {
-        "tests": "vendor/bin/phpunit --testdox --colors=always",
-        "test-coverage": "vendor/bin/phpunit --testdox --colors=always --coverage-html coverage",
+        "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
+        "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
         "phpcs": "vendor/bin/phpcs src tests --standard=PSR12",
         "phpcbf": "vendor/bin/phpcbf"
     }
