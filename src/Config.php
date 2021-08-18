@@ -105,17 +105,39 @@ class Config
         foreach ($files as $file) {
             $settings = array_merge($settings, $this->readFile($file));
         }
-        $config = $this->parseConfigArray($settings);
-        self::$store = self::$store->mergeRecursively($config);
+
+        $this->updateConfig($this->parseConfigArray($settings));
     }
 
     public function loadFile(string $file): void
     {
-        if (FileService::make($file)->exists()) {
-            $settings = $this->readFile($file);
-            $config = $this->parseConfigArray($settings);
-            self::$store = self::$store->mergeRecursively($config);
-        }
+        $config = $this->getConfigFromFile($file);
+
+        $this->updateConfig($config);
+    }
+
+    /**
+     * Read config from a file and parse it into a usable structure
+     *
+     * @param  string  $file  Filepath of config file
+     *
+     * @return array
+     */
+    protected function getConfigFromFile(string $file): array
+    {
+        $settings = $this->readFile($file);
+
+        return $this->parseConfigArray($settings);
+    }
+
+    /**
+     * Update the config data store with new values
+     *
+     * @param  array  $config
+     */
+    protected function updateConfig(array $config): void
+    {
+        self::$store = self::$store->mergeRecursively($config);
     }
 
     protected function readFile(string $filename): array

@@ -4,9 +4,6 @@ namespace Tests;
 
 use Myerscode\Config\Config;
 
-/**
- * @covers \Myerscode\Config\Config
- */
 class LoadFilesTest extends TestCase
 {
 
@@ -42,9 +39,23 @@ class LoadFilesTest extends TestCase
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
                 'setting' => 'foo bar',
-                'array' => ['a', 'b' , 'c']
+                'array' => ['a', 'b', 'c'],
             ],
             $config->values()
         );
+    }
+
+    public function testLoadsNoneExistentFilesAsEmptyConfig()
+    {
+        $config = new Config();
+        $config->loadFile('foo.bar');
+        $this->assertEquals([], $config->values());
+    }
+
+    public function testWillNotLoadUnsupportedConfigFileType()
+    {
+        $config = new Config();
+        $config->loadFile($this->resourceFilePath('/Resources/config.toml'));
+        $this->assertEquals([], $config->values());
     }
 }

@@ -5,9 +5,6 @@ namespace Tests;
 use Myerscode\Config\Config;
 use Myerscode\Config\Exceptions\ConfigException;
 
-/**
- * @covers \Myerscode\Config\Config
- */
 class ConfigTest extends TestCase
 {
 
