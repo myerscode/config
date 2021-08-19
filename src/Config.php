@@ -18,7 +18,7 @@ class Config
 
     public function __construct()
     {
-        $this->createStore();
+        self::createStore();
         $this->resetCounter();
     }
 
@@ -33,7 +33,7 @@ class Config
         self::make();
     }
 
-    protected function createStore(): void
+    protected static function createStore(): void
     {
         if (!isset(self::$store)) {
             self::$store = new Store([]);
@@ -166,6 +166,7 @@ class Config
      */
     public static function store(): Store
     {
+        self::createStore();
         return self::$store;
     }
 
