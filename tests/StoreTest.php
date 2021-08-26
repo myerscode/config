@@ -10,12 +10,12 @@ class StoreTest extends TestCase
 
     public function testCanGetStore()
     {
-        $this->assertInstanceOf(Store::class, Config::store());
+        $this->assertInstanceOf(Store::class, (new Config())->store());
     }
 
     public function testStoreIsReset()
     {
-        Config::make()->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
+        $config = Config::make()->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
         $this->assertEquals(
             [
@@ -30,11 +30,11 @@ class StoreTest extends TestCase
                     'hello' => 'world',
                 ],
             ],
-            Config::store()->toArray()
+            $config->store()->toArray()
         );
 
-        Config::reset();
+        $config->reset();
 
-        $this->assertEquals([], Config::store()->toArray());
+        $this->assertEquals([], $config->store()->toArray());
     }
 }

@@ -12,13 +12,13 @@ class Config
 {
     public const MAX_RECURSION_LOOPS = 25;
 
-    private static ?Store $store = null;
+    private ?Store $store;
 
     private Store $recursionCounter;
 
     public function __construct()
     {
-        self::createStore();
+        $this->createStore();
         $this->resetCounter();
     }
 
@@ -27,16 +27,16 @@ class Config
         return new self();
     }
 
-    public static function reset(): void
+    public function reset(): void
     {
-        self::$store = null;
-        self::make();
+        $this->store = null;
+        $this->createStore();
     }
 
-    protected static function createStore(): void
+    protected function createStore(): void
     {
         if (!isset(self::$store)) {
-            self::$store = new Store([]);
+            $this->store = new Store([]);
         }
     }
 
@@ -88,7 +88,7 @@ class Config
 
         $value = $repo->get($key);
 
-        if (is_null($value)) {
+        if (is_null($value) && is_null($value = $this->store()->get($key))) {
             return null;
         }
 
@@ -97,6 +97,11 @@ class Config
         }
 
         return $this->resolveValues($value, $repo);
+    }
+
+    protected function getFileNameSpace(string $file): string
+    {
+        return pathinfo($file, PATHINFO_FILENAME);
     }
 
     public function loadFiles(array $files): void
@@ -109,9 +114,52 @@ class Config
         $this->updateConfig($this->parseConfigArray($settings));
     }
 
-    public function loadFile(string $file): void
+    public function loadFilesWithNamespace(array $files): void
+    {
+        $settings = [];
+        foreach ($files as $file) {
+            $settingNamespace = $this->getFileNameSpace($file);
+            $settings = array_merge($settings, [$settingNamespace => $this->readFile($file)]);
+        }
+
+        $this->updateConfig($this->parseConfigArray($settings));
+    }
+
+    public function loadFile(string $file): self
     {
         $config = $this->getConfigFromFile($file);
+
+        $this->updateConfig($config);
+
+        return $this;
+    }
+    public function loadFileWithNameSpace(string $file): self
+    {
+        $settingNamespace = $this->getFileNameSpace($file);
+
+        $config = $this->getConfigFromFile($file);
+
+        $this->updateConfig([$settingNamespace => $config]);
+
+        return $this;
+    }
+
+    /**
+     * Load in data from an existing Config or array
+     *
+     * @param $data
+     */
+    public function loadData($data): void
+    {
+        if ($data instanceof Config) {
+            $configData = $data->values();
+        } elseif ($data instanceof Store) {
+            $configData = $data->toArray();
+        } else {
+            $configData = $data;
+        }
+
+        $config = $this->parseConfigArray($configData);
 
         $this->updateConfig($config);
     }
@@ -137,7 +185,7 @@ class Config
      */
     protected function updateConfig(array $config): void
     {
-        self::$store = self::$store->mergeRecursively($config);
+        $this->store = $this->store->mergeRecursively($config);
     }
 
     protected function readFile(string $filename): array
@@ -164,10 +212,9 @@ class Config
     /**
      * @return Store
      */
-    public static function store(): Store
+    public function store(): Store
     {
-        self::createStore();
-        return self::$store;
+        return $this->store;
     }
 
     /**

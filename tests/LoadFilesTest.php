@@ -58,4 +58,67 @@ class LoadFilesTest extends TestCase
         $config->loadFile($this->resourceFilePath('/Resources/config.toml'));
         $this->assertEquals([], $config->values());
     }
+
+    public function testFilesCanBeLoadedToNamespaced()
+    {
+        $config = new Config();
+        $config->loadFilesWithNamespace([
+            $this->resourceFilePath('/Resources/app.php'),
+            $this->resourceFilePath('/Resources/db.php'),
+        ]);
+
+        $this->assertEquals(
+            [
+                'app' => [
+                    'name' => 'myerscode',
+                    'version' => '7749',
+                ],
+                'db' => [
+                    'name' => 'myerscode_db',
+                    'user' => 'myerscode_user',
+                    'password' => '77xx49',
+
+                ],
+            ],
+            $config->values()
+        );
+
+        $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
+    }
+
+    public function testFileCanBeLoadedToNamespaced()
+    {
+        $config = new Config();
+        $config->loadFileWithNamespace($this->resourceFilePath('/Resources/app.php'));
+
+        $this->assertEquals(
+            [
+                'app' => [
+                    'name' => 'myerscode',
+                    'version' => '7749',
+                ],
+            ],
+            $config->values()
+        );
+
+        $config->loadFileWithNamespace($this->resourceFilePath('/Resources/db.php'));
+
+        $this->assertEquals(
+            [
+                'app' => [
+                    'name' => 'myerscode',
+                    'version' => '7749',
+                ],
+                'db' => [
+                    'name' => 'myerscode_db',
+                    'user' => 'myerscode_user',
+                    'password' => '77xx49',
+
+                ],
+            ],
+            $config->values()
+        );
+
+        $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
+    }
 }

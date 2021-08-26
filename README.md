@@ -21,43 +21,111 @@ composer require myerscode/config
 
 ## Usage
 
+### Creating a Config Store
+To get started ll you need to do is you need to create a `Config` instance and start loading data into files into it.
 
-### Creating store
-The config data store is static, so all you need to do is start loading values into it
 ```php
-(new Config())->loadFiles([
-'app.config.php',
-'db.config.yaml',
+$config = new Config();
+
+$config->loadFiles([
+'config/app.php',
+'config/db.yaml',
 ]);
 
-(new Config())->loadFile('cache.config.php');
+$config->loadFile('config/cache.php');
+
+$config->loadData(['api_key' => 'abc123']);
+
+// example config object
+[
+    'name' => 'myerscode',
+    'db_name' => 'myerscode_db',
+    'api_key' => 'abc123',
+]
 ```
 
-### Retrieving a value
+### Namespaced Configuration
+By default, config from files will be merged recursivly when loaded in. If you want to 
+give each file a top level namespace call the `loadFilesWithNamespace` and `loadFileWithNamespace` methods to have each
+file be loaded into a namespace using their filename
 ```php
-// class instance
-$config = (new Config())->value('app.name');
+$config = new Config();
 
-// helper function
-$config = config('app.name');
+$config->loadFilesWithNamespace([
+'config/app.php',
+'config/db.yaml',
+]);
+
+$config->loadFileWithNamespace('config/cache.php');
+
+// example config object
+[
+    'app' => [...],
+    'db' => [...],
+    'cache' => [...],
+]
+```
+
+
+### Retrieving a value
+Retrieve a single value from the store by using the `value` method and passing in a key.
+
+Using `dot notation` you can access deep values of a config element, or retrieve the entire
+object by calling its top level namespace.
+
+```php
+$config->value('app.name');
+
+$config->value('app');
+
+$config->value('api_key');
 ```
 
 ### Get all store value
+Get all the values from the store as an array using the `values` method.
 ```php
-// class instance
-$config = (new Config())->values();
-
-// helper function
-$config = config();
+$config->values();
 ```
 
 ### Accessing the store
-As the store is static, accessing the values can be done simply by calling the `store` helper or using the helper without a key.
+Accessing the values directly is done by calling the `store` method.
 ```php
-// new instance
-$config = (new Config())->store();
-// static builder
-$config = Config::store();
+$store = $config->store();
+```
+
+## Config Syntax
+A basic config file, is a PHP file that will just return an array or a YAML file.
+
+```php
+// app.config.php
+return [
+    'name' => 'Fred Myerscough',
+    'settings' => [
+        'a',
+        'b',
+        'c'
+    ],
+];
+```
+
+### Cross Referencing Values
+
+```php 
+// app.config.php
+return [
+    'name' => 'myerscode',
+    'env' => 'myerscode',
+];
+
+// db.config.php
+return [
+    'db' => [
+        'setting' => [
+            'name' => '${env}_${name}_db',
+        ]
+    ],
+    'db_name' => '${db.config.name}'
+];
 ```
 
 ## Issues and Contributing
