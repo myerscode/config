@@ -88,7 +88,7 @@ class Config
 
         $value = $repo->get($key);
 
-        if (is_null($value)) {
+        if (is_null($value) && is_null($value = $this->store()->get($key))) {
             return null;
         }
 
