@@ -99,6 +99,11 @@ class Config
         return $this->resolveValues($value, $repo);
     }
 
+    protected function getFileNameSpace(string $file): string
+    {
+        return pathinfo($file, PATHINFO_FILENAME);
+    }
+
     public function loadFiles(array $files): void
     {
         $settings = [];
@@ -109,11 +114,32 @@ class Config
         $this->updateConfig($this->parseConfigArray($settings));
     }
 
+    public function loadFilesWithNamespace(array $files): void
+    {
+        $settings = [];
+        foreach ($files as $file) {
+            $settingNamespace = $this->getFileNameSpace($file);
+            $settings = array_merge($settings, [$settingNamespace => $this->readFile($file)]);
+        }
+
+        $this->updateConfig($this->parseConfigArray($settings));
+    }
+
     public function loadFile(string $file): self
     {
         $config = $this->getConfigFromFile($file);
 
         $this->updateConfig($config);
+
+        return $this;
+    }
+    public function loadFileWithNameSpace(string $file): self
+    {
+        $settingNamespace = $this->getFileNameSpace($file);
+
+        $config = $this->getConfigFromFile($file);
+
+        $this->updateConfig([$settingNamespace => $config]);
 
         return $this;
     }
