@@ -121,4 +121,32 @@ class LoadFilesTest extends TestCase
 
         $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
     }
+
+    public function testNamespacesFilesAreLowerCase()
+    {
+        $config = new Config();
+        $config->loadFileWithNamespace($this->resourceFilePath('/Resources/Settings.php'));
+        $this->assertEquals(
+            [
+                'settings' => [
+                    'abc' => '123',
+                ],
+            ],
+            $config->values()
+        );
+    }
+
+    public function testNamespacesFilesAreSnakeCase()
+    {
+        $config = new Config();
+        $config->loadFileWithNamespace($this->resourceFilePath('/Resources/AppSettings.php'));
+        $this->assertEquals(
+            [
+                'app_settings' => [
+                    'abc' => '123',
+                ],
+            ],
+            $config->values()
+        );
+    }
 }

@@ -13,6 +13,7 @@
         "php": "^8.0",
         "myerscode/utilities-bags": "^1.2",
         "myerscode/utilities-files": "^1.0",
+        "myerscode/utilities-strings": "^1.3",
         "symfony/serializer": "^5.2",
         "symfony/yaml": "^5.3"
     },
