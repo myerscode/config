@@ -4,6 +4,7 @@ namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
 use Myerscode\Utilities\Files\Utility as FileService;
+use Myerscode\Utilities\Strings\Utility as StringService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Yaml\Yaml;
@@ -101,7 +102,7 @@ class Config
 
     protected function getFileNameSpace(string $file): string
     {
-        return pathinfo($file, PATHINFO_FILENAME);
+        return (new StringService(pathinfo($file, PATHINFO_FILENAME)))->toSnakeCase()->value();
     }
 
     public function loadFiles(array $files): void
