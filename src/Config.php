@@ -228,11 +228,12 @@ class Config
 
     /**
      * @param  string  $key
+     * @param  null  $default
      *
-     * @return array|mixed|null
+     * @return mixed
      */
-    public function value(string $key): mixed
+    public function value(string $key, $default = null): mixed
     {
-        return $this->store()->get($key);
+        return $this->store()->get($key, $default);
     }
 }
