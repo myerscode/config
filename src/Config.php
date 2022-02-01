@@ -232,7 +232,7 @@ class Config
      *
      * @return mixed
      */
-    public function value(string $key, $default = null): mixed
+    public function value(string $key, $default = null)
     {
         return $this->store()->get($key, $default);
     }
