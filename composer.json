@@ -14,8 +14,8 @@
         "myerscode/utilities-bags": "^1.0|^2.0",
         "myerscode/utilities-files": "^1.0|^2.0",
         "myerscode/utilities-strings": "^1.0|^2.0",
-        "symfony/serializer": "^6.0",
-        "symfony/yaml": "^6.0"
+        "symfony/serializer": "^5.4|^6.0",
+        "symfony/yaml": "^5.4|^6.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
