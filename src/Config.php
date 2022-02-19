@@ -3,10 +3,12 @@
 namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Myerscode\Utilities\Strings\Utility as StringService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Yaml\Yaml;
 
 class Config
@@ -54,28 +56,56 @@ class Config
         return $this->resolveVariables(new Store($config));
     }
 
-    protected function serializeArray(array $array)
+    protected function serialize(array $array): string
     {
         return (new JsonEncode())->encode(
             $array,
             JsonEncoder::FORMAT,
-            ['json_encode_Config' => 194]
+            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
+        );
+    }
+
+    protected function deserialize(string $config): array
+    {
+        return (new JsonEncoder())->decode(
+            $config,
+            JsonEncoder::FORMAT,
+            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
         );
     }
 
     private function resolveVariables(Store $repo)
     {
-        $configTemplate = $this->serializeArray($repo->toArray());
+        $configTemplate = $this->serialize($repo->toArray());
 
         $updatedTemplate = $this->resolveValues($configTemplate, $repo);
 
-        return (new JsonEncoder())->decode($updatedTemplate, JsonEncoder::FORMAT);
+        try {
+            return $this->deserialize($updatedTemplate);
+        } catch (NotEncodableValueException $e) {
+            throw new ResolveVariablesDecodeException(
+                $repo->toArray(),
+                $configTemplate,
+                $updatedTemplate,
+                $e
+            );
+        }
+    }
+
+    private function escapeJsonString(string $value): string
+    {
+        $escape = ["\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c"];
+        $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
+
+        return str_replace($escape, $with, $value);
     }
 
     private function resolveValues($template, Store $repo)
     {
         return preg_replace_callback('/\${([a-zA-Z0-9_.]+)}/', function (array $matches) use ($repo) {
-            return $this->resolveConfigValue($matches[1], $repo) ?? $matches[0];
+            $configValue = $this->resolveConfigValue($matches[1], $repo);
+
+            return !is_null($configValue) ? $this->escapeJsonString($configValue) : $matches[0];
         }, $template);
     }
 

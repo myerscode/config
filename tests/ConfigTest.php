@@ -4,6 +4,8 @@ namespace Tests;
 
 use Myerscode\Config\Config;
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 class ConfigTest extends TestCase
 {
@@ -105,5 +107,13 @@ class ConfigTest extends TestCase
         $config = $this->mock(Config::class)->makePartial();
         $config->loadFile('foobar.php');
         $this->assertEquals([], $config->values());
+    }
+
+    public function testThrowsExceptionIfCannotEncodeResolvedConfig()
+    {
+        $config = $this->mock(Config::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $config->shouldReceive('deserialize')->andThrow(new NotEncodableValueException());
+        $this->expectException(ResolveVariablesDecodeException::class);
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
     }
 }
