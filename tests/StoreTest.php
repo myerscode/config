@@ -7,13 +7,12 @@ use Myerscode\Config\Store;
 
 class StoreTest extends TestCase
 {
-
-    public function testCanGetStore()
+    public function testCanGetStore(): void
     {
         $this->assertInstanceOf(Store::class, (new Config())->store());
     }
 
-    public function testStoreIsReset()
+    public function testStoreIsReset(): void
     {
         $config = Config::make()->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
