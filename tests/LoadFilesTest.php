@@ -6,8 +6,7 @@ use Myerscode\Config\Config;
 
 class LoadFilesTest extends TestCase
 {
-
-    public function testCanBuildConfigFromMultipleFiles()
+    public function testCanBuildConfigFromMultipleFiles(): void
     {
         $config = new Config();
 
@@ -25,7 +24,7 @@ class LoadFilesTest extends TestCase
         );
     }
 
-    public function testCanBuildConfigFromYaml()
+    public function testCanBuildConfigFromYaml(): void
     {
         $config = new Config();
 
@@ -45,21 +44,21 @@ class LoadFilesTest extends TestCase
         );
     }
 
-    public function testLoadsNoneExistentFilesAsEmptyConfig()
+    public function testLoadsNoneExistentFilesAsEmptyConfig(): void
     {
         $config = new Config();
         $config->loadFile('foo.bar');
         $this->assertEquals([], $config->values());
     }
 
-    public function testWillNotLoadUnsupportedConfigFileType()
+    public function testWillNotLoadUnsupportedConfigFileType(): void
     {
         $config = new Config();
         $config->loadFile($this->resourceFilePath('/Resources/config.toml'));
         $this->assertEquals([], $config->values());
     }
 
-    public function testFilesCanBeLoadedToNamespaced()
+    public function testFilesCanBeLoadedToNamespaced(): void
     {
         $config = new Config();
         $config->loadFilesWithNamespace([
@@ -86,7 +85,7 @@ class LoadFilesTest extends TestCase
         $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
     }
 
-    public function testFileCanBeLoadedToNamespaced()
+    public function testFileCanBeLoadedToNamespaced(): void
     {
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/app.php'));
@@ -122,7 +121,7 @@ class LoadFilesTest extends TestCase
         $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
     }
 
-    public function testNamespacesFilesAreLowerCase()
+    public function testNamespacesFilesAreLowerCase(): void
     {
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/Settings.php'));
@@ -136,7 +135,7 @@ class LoadFilesTest extends TestCase
         );
     }
 
-    public function testNamespacesFilesAreSnakeCase()
+    public function testNamespacesFilesAreSnakeCase(): void
     {
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/AppSettings.php'));

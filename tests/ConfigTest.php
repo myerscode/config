@@ -4,11 +4,12 @@ namespace Tests;
 
 use Myerscode\Config\Config;
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 class ConfigTest extends TestCase
 {
-
-    public function testConfigParsesFile()
+    public function testConfigParsesFile(): void
     {
         /**
          * @var $config Config
@@ -34,7 +35,7 @@ class ConfigTest extends TestCase
         );
     }
 
-    public function testConfigResolvesNestedVariables()
+    public function testConfigResolvesNestedVariables(): void
     {
         $config = $this->mock(Config::class)->makePartial();
 
@@ -56,7 +57,7 @@ class ConfigTest extends TestCase
         );
     }
 
-    public function testConfigLeavesUnknownReferences()
+    public function testConfigLeavesUnknownReferences(): void
     {
         $config = $this->mock(Config::class)->makePartial();
 
@@ -72,7 +73,7 @@ class ConfigTest extends TestCase
         );
     }
 
-    public function testConfigFindsValues()
+    public function testConfigFindsValues(): void
     {
         $config = $this->mock(Config::class)->makePartial();
 
@@ -84,7 +85,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('world', $config->value('Config.hello'));
     }
 
-    public function testConfigHandlesInfiniteRecursion()
+    public function testConfigHandlesInfiniteRecursion(): void
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
@@ -92,7 +93,7 @@ class ConfigTest extends TestCase
         $config->loadFile($this->resourceFilePath('/Resources/recursion-config.php'));
     }
 
-    public function testConfigHandlesNoneStringReference()
+    public function testConfigHandlesNoneStringReference(): void
     {
         $config = $this->mock(Config::class)->makePartial();
         $this->expectException(ConfigException::class);
@@ -100,10 +101,18 @@ class ConfigTest extends TestCase
         $config->loadFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
     }
 
-    public function testConfigHandlesConfigFileNotExisting()
+    public function testConfigHandlesConfigFileNotExisting(): void
     {
         $config = $this->mock(Config::class)->makePartial();
         $config->loadFile('foobar.php');
         $this->assertEquals([], $config->values());
+    }
+
+    public function testThrowsExceptionIfCannotEncodeResolvedConfig(): void
+    {
+        $config = $this->mock(Config::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $config->shouldReceive('deserialize')->andThrow(new NotEncodableValueException());
+        $this->expectException(ResolveVariablesDecodeException::class);
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
     }
 }

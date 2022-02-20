@@ -7,8 +7,7 @@ use Myerscode\Config\Store;
 
 class LoadDataTest extends TestCase
 {
-
-    public function testCanLoadDataFromArray()
+    public function testCanLoadDataFromArray(): void
     {
         $config = new Config();
 
@@ -30,7 +29,7 @@ class LoadDataTest extends TestCase
         );
     }
 
-    public function testCanLoadDataFromExistingStore()
+    public function testCanLoadDataFromExistingStore(): void
     {
         $store = new Store([
             'foo' => 'bar',
@@ -50,7 +49,7 @@ class LoadDataTest extends TestCase
         );
     }
 
-    public function testCanLoadDataFromExistingConfig()
+    public function testCanLoadDataFromExistingConfig(): void
     {
         $configOne = new Config();
         $configTwo = new Config();

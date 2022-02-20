@@ -3,17 +3,19 @@
 namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Myerscode\Utilities\Strings\Utility as StringService;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Yaml\Yaml;
 
 class Config
 {
     public const MAX_RECURSION_LOOPS = 25;
 
-    private ?Store $store;
+    private ?Store $store = null;
 
     private Store $recursionCounter;
 
@@ -54,40 +56,63 @@ class Config
         return $this->resolveVariables(new Store($config));
     }
 
-    protected function serializeArray(array $array)
+    protected function serialize(array $array): string
     {
         return (new JsonEncode())->encode(
             $array,
             JsonEncoder::FORMAT,
-            ['json_encode_Config' => 194]
+            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
         );
     }
 
-    private function resolveVariables(Store $repo)
+    /**
+     * @return mixed[]
+     */
+    protected function deserialize(string $config): array
     {
-        $configTemplate = $this->serializeArray($repo->toArray());
-
-        $updatedTemplate = $this->resolveValues($configTemplate, $repo);
-
-        return (new JsonEncoder())->decode($updatedTemplate, JsonEncoder::FORMAT);
+        return (new JsonEncoder())->decode(
+            $config,
+            JsonEncoder::FORMAT,
+            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
+        );
     }
 
-    private function resolveValues($template, Store $repo)
+    private function resolveVariables(Store $store)
     {
-        return preg_replace_callback('/\${([a-zA-Z0-9_.]+)}/', function (array $matches) use ($repo) {
-            return $this->resolveConfigValue($matches[1], $repo) ?? $matches[0];
+        $configTemplate = $this->serialize($store->toArray());
+
+        $updatedTemplate = $this->resolveValues($configTemplate, $store);
+
+        try {
+            return $this->deserialize($updatedTemplate);
+        } catch (NotEncodableValueException $notEncodableValueException) {
+            throw new ResolveVariablesDecodeException(
+                $store->toArray(),
+                $configTemplate,
+                $updatedTemplate,
+                $notEncodableValueException
+            );
+        }
+    }
+
+    private function resolveValues(string $template, Store $store)
+    {
+        return preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store) {
+            $configValue = $this->resolveConfigValue($matches[1], $store);
+
+            return is_null($configValue) ? $matches[0] : $this->escapeJsonString($configValue);
         }, $template);
     }
 
-    private function resolveConfigValue(string $key, Store $repo)
+    private function resolveConfigValue(string $key, Store $store)
     {
         $this->recursionCounter->set($key, $this->recursionCounter->get($key, 0) + 1);
 
         if ($this->recursionCounter->get($key) >= Config::MAX_RECURSION_LOOPS) {
-            throw new ConfigException("Config key $key is referencing a value which has a caused a recursion error");
+            throw new ConfigException(sprintf('Config key %s is referencing a value which has a caused a recursion error', $key));
         }
 
-        $value = $repo->get($key);
+        $value = $store->get($key);
 
         if (is_null($value) && is_null($value = $this->store()->get($key))) {
             return null;
@@ -97,7 +122,15 @@ class Config
             throw new ConfigException("A config value can only reference another string");
         }
 
-        return $this->resolveValues($value, $repo);
+        return $this->resolveValues($value, $store);
+    }
+
+    private function escapeJsonString(string $value): string
+    {
+        $escape = ["\\", "/", '"', "\n", "\r", "\t", "\x08", "\x0c"];
+        $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
+
+        return str_replace($escape, $with, $value);
     }
 
     protected function getFileNameSpace(string $file): string
@@ -134,6 +167,7 @@ class Config
 
         return $this;
     }
+
     public function loadFileWithNameSpace(string $file): self
     {
         $settingNamespace = $this->getFileNameSpace($file);
@@ -169,8 +203,6 @@ class Config
      * Read config from a file and parse it into a usable structure
      *
      * @param  string  $file  Filepath of config file
-     *
-     * @return array
      */
     protected function getConfigFromFile(string $file): array
     {
@@ -181,19 +213,21 @@ class Config
 
     /**
      * Update the config data store with new values
-     *
-     * @param  array  $config
      */
     protected function updateConfig(array $config): void
     {
         $this->store = $this->store->mergeRecursively($config);
     }
 
+    /**
+     * @return mixed[]
+     */
     protected function readFile(string $filename): array
     {
         if (!FileService::make($filename)->exists()) {
             return [];
         }
+
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
         if ($extension === 'php') {
             $settings = include $filename;
@@ -201,25 +235,24 @@ class Config
                 return $settings;
             }
         }
+
         if ($extension === 'yaml' || $extension === 'yml') {
             $settings = Yaml::parseFile($filename);
             if (is_array($settings)) {
                 return $settings;
             }
         }
+
         return [];
     }
 
-    /**
-     * @return Store
-     */
-    public function store(): Store
+    public function store(): ?\Myerscode\Config\Store
     {
         return $this->store;
     }
 
     /**
-     * @return array
+     * @return mixed[]
      */
     public function values(): array
     {
@@ -227,9 +260,7 @@ class Config
     }
 
     /**
-     * @param  string  $key
      * @param  null  $default
-     *
      * @return mixed
      */
     public function value(string $key, $default = null)
