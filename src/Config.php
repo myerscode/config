@@ -100,7 +100,7 @@ class Config
         return preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store) {
             $configValue = $this->resolveConfigValue($matches[1], $store);
 
-            return is_null($configValue) ? $matches[0] : $this->escapeJsonString($configValue);
+            return is_null($configValue) ? $matches[0] : $this->encode($configValue);
         }, $template);
     }
 
@@ -122,13 +122,21 @@ class Config
             throw new ConfigException("A config value can only reference another string");
         }
 
-        return $this->resolveValues($value, $store);
+        return $this->decode($this->resolveValues($value, $store));
     }
 
-    private function escapeJsonString(string $value): string
+    private function encode(string $value): string
     {
         $escape = ["\\", "/", '"', "\n", "\r", "\t", "\x08", "\x0c"];
         $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
+
+        return str_replace($escape, $with, $value);
+    }
+
+    private function decode(string $value): string
+    {
+        $escape = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
+        $with = ["\\", "/", '"', "\n", "\r", "\t", "\x08", "\x0c"];
 
         return str_replace($escape, $with, $value);
     }
