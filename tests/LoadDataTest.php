@@ -71,4 +71,48 @@ class LoadDataTest extends TestCase
             $configTwo->values()
         );
     }
+
+    public function testCanLoadDataWithEscapedCharacters(): void
+    {
+        $config = new Config();
+
+        $config->loadData([
+            'dir' => '/home/user/corgi',
+        ]);
+
+        $config->loadFilesWithNamespace([
+            $this->resourceFilePath('/Resources/Config/Special.php'),
+        ]);
+
+        $escapedCharacters = [
+            'newline' => "string\nwith a newline character.",
+            'tab' => "string\twith a tab character.",
+            'backslash' => "string with a backslash: \\.",
+            'double_quotes' => "string with double quotes: \"Hello, World!\"",
+            'single_quotes' => 'string with single quotes: \'Hello, World!\'',
+            'unicode_escape' => "string with a Unicode encode: \\u00A9 (\u00A9)",
+        ];
+
+        foreach ($escapedCharacters as $escapedCharacter => $value) {
+            $this->assertEquals($value, $config->value("special.escaped_characters.$escapedCharacter"),);
+        }
+    }
+
+    public function testDoesNotReEncodeNestedValues(): void
+    {
+        $config = new Config();
+
+        $config->loadData([
+            'dir' => '/home/user/corgi',
+        ]);
+
+        $config->loadFilesWithNamespace([
+            $this->resourceFilePath('/Resources/Config/Directories.php'),
+        ]);
+
+        $this->assertEquals(
+            '/home/user/corgi/root/test/home/user/corgi/root/\'template\'/home/user/corgi/root/"directory"/Corgi/template/path',
+            $config->value('directories.test.path'),
+        );
+    }
 }
