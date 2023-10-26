@@ -8,8 +8,14 @@ class MixedLoadTest extends TestCase
 {
     public function testCanLoadFromMixedSources(): void
     {
-        $base = $this->resourceFilePath('/Resources/App');
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $base = 'D:\\myerscode\\';
+        } else {
+            $base = '/home/myerscode/';
+        }
+
         $src = dirname(__DIR__) . '/src';
+
         $data = [
             'base' => $base,
             'src' => $src,
@@ -36,17 +42,17 @@ class MixedLoadTest extends TestCase
                 'weird_path' => 'C:\Windows\Important\Drive\t\r\n\f\b',
                 'app' => [
                     'dir' => [
-                        'commands' => sprintf('%s/Commands', $base),
-                        'events' => sprintf('%s/Events', $base),
-                        'listeners' => sprintf('%s/Listeners', $base),
+                        'commands' => "$base/Commands",
+                        'events' => "$base/Events",
+                        'listeners' => "$base/Listeners",
                     ],
                     'store' => 'Myerscode\Config\Store',
                 ],
                 'framework' => [
                     'dir' => [
-                        'commands' => sprintf('%s/Foundation/Commands', $src),
-                        'events' => sprintf('%s/Foundation/Events', $src),
-                        'listeners' => sprintf('%s/Foundation/Listeners', $src),
+                        'commands' => "$src/Foundation/Commands",
+                        'events' => "$src/Foundation/Events",
+                        'listeners' => "$src/Foundation/Listeners",
                     ],
                 ],
             ],
