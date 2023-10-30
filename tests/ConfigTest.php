@@ -4,6 +4,7 @@ namespace Tests;
 
 use Myerscode\Config\Config;
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\InvalidConfigValueException;
 use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
@@ -114,5 +115,32 @@ class ConfigTest extends TestCase
         $config->shouldReceive('deserialize')->andThrow(new NotEncodableValueException());
         $this->expectException(ResolveVariablesDecodeException::class);
         $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
+    }
+
+    public function testValueOrThrow(): void
+    {
+        $config = new Config();
+
+        $config->loadData([
+            'foo' => 'bar',
+            'bar' => ['foo' => 'bar', 'hello' => 'world'],
+        ]);
+
+        $this->assertEquals('bar', $config->valueOrThrow('foo'));
+    }
+
+    public function testValueOrThrowCanThrowExceptionIfAccessorNotSet(): void
+    {
+        $this->expectException(InvalidConfigValueException::class);
+        $this->expectExceptionMessage("There is no config value set for key: hello");
+
+        $config = new Config();
+
+        $config->loadData([
+            'foo' => 'bar',
+            'bar' => ['foo' => 'bar', 'hello' => 'world'],
+        ]);
+
+        $config->valueOrThrow('hello');
     }
 }
