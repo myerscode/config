@@ -3,6 +3,7 @@
 namespace Myerscode\Config;
 
 use Myerscode\Config\Exceptions\ConfigException;
+use Myerscode\Config\Exceptions\InvalidConfigValueException;
 use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Myerscode\Utilities\Strings\Utility as StringService;
@@ -274,5 +275,16 @@ class Config
     public function value(string $key, $default = null)
     {
         return $this->store()->get($key, $default);
+    }
+
+    /**
+     * Get a config value or throw an exception if its not set
+     */
+    public function valueOrThrow(string $key)
+    {
+        if ($this->store()->exists($key)) {
+            return $this->store()->get($key);
+        }
+        throw new InvalidConfigValueException("There is no config value set for key: $key");
     }
 }
