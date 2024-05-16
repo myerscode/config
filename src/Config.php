@@ -128,16 +128,16 @@ class Config
 
     private function encode(string $value): string
     {
-        $escape = ["\\", "/", '"', "\n", "\r", "\t", "\x08", "\x0c"];
-        $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
+        $escape = ["\\", "/", '"', "\n", "\r", "\T", "\x08", "\x0c"];
+        $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\T", "\\f", "\\b"];
 
         return str_replace($escape, $with, $value);
     }
 
     private function decode(string $value): string
     {
-        $escape = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b"];
-        $with = ["\\", "/", '"', "\n", "\r", "\t", "\x08", "\x0c"];
+        $escape = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\T", "\\f", "\\b"];
+        $with = ["\\", "/", '"', "\n", "\r", "\T", "\x08", "\x0c"];
 
         return str_replace($escape, $with, $value);
     }
