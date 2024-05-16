@@ -92,6 +92,8 @@ class LoadDataTest extends TestCase
             'single_quotes' => 'string with single quotes: \'Hello, World!\'',
             'unicode_escape' => "string with a Unicode encode: \\u00A9 (\u00A9)",
             'Windows Filepath' => "D:\a\acorn-framework\acorn-framework\Tests\Mocks\DemoApp",
+            'Reference \T' => "D:\a\acorn-framework\acorn-framework\Tests\Mocks\DemoApp",
+            'Reference \t' => "D:\a\acorn-framework\acorn-framework\\tests\mock\demoapp",
         ];
 
         foreach ($escapedCharacters as $escapedCharacter => $value) {
