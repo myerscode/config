@@ -12,9 +12,6 @@ class ConfigTest extends TestCase
 {
     public function testConfigParsesFile(): void
     {
-        /**
-         * @var $config Config
-         */
         $config = $this->mock(Config::class)->makePartial();
 
         $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));

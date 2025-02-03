@@ -78,7 +78,7 @@ class Config
         );
     }
 
-    private function resolveVariables(Store $store)
+    private function resolveVariables(Store $store): array
     {
         $configTemplate = $this->serialize($store->toArray());
 
@@ -96,16 +96,16 @@ class Config
         }
     }
 
-    private function resolveValues(string $template, Store $store)
+    private function resolveValues(string $template, Store $store): ?string
     {
-        return preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store) {
+        return preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store): string {
             $configValue = $this->resolveConfigValue($matches[1], $store);
 
             return is_null($configValue) ? $matches[0] : $this->encode($configValue);
         }, $template);
     }
 
-    private function resolveConfigValue(string $key, Store $store)
+    private function resolveConfigValue(string $key, Store $store): ?string
     {
         $this->recursionCounter->set($key, $this->recursionCounter->get($key, 0) + 1);
 
@@ -255,7 +255,7 @@ class Config
         return [];
     }
 
-    public function store(): ?\Myerscode\Config\Store
+    public function store(): ?Store
     {
         return $this->store;
     }
@@ -269,7 +269,6 @@ class Config
     }
 
     /**
-     * @param  null  $default
      * @return mixed
      */
     public function value(string $key, $default = null)
@@ -285,6 +284,7 @@ class Config
         if ($this->store()->exists($key)) {
             return $this->store()->get($key);
         }
-        throw new InvalidConfigValueException("There is no config value set for key: $key");
+
+        throw new InvalidConfigValueException('There is no config value set for key: ' . $key);
     }
 }

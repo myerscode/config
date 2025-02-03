@@ -2,17 +2,14 @@
 
 namespace Tests;
 
+use Myerscode\Config\Store;
 use Myerscode\Config\Config;
 
 class MixedLoadTest extends TestCase
 {
     public function testCanLoadFromMixedSources(): void
     {
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $base = 'D:\\myerscode\\';
-        } else {
-            $base = '/home/myerscode/';
-        }
+        $base = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'D:\\myerscode\\' : '/home/myerscode/';
 
         $src = dirname(__DIR__) . '/src';
 
@@ -42,17 +39,17 @@ class MixedLoadTest extends TestCase
                 'weird_path' => 'C:\Windows\Important\Drive\t\r\n\f\b',
                 'app' => [
                     'dir' => [
-                        'commands' => "$base/Commands",
-                        'events' => "$base/Events",
-                        'listeners' => "$base/Listeners",
+                        'commands' => $base . '/Commands',
+                        'events' => $base . '/Events',
+                        'listeners' => $base . '/Listeners',
                     ],
-                    'store' => 'Myerscode\Config\Store',
+                    'store' => Store::class,
                 ],
                 'framework' => [
                     'dir' => [
-                        'commands' => "$src/Foundation/Commands",
-                        'events' => "$src/Foundation/Events",
-                        'listeners' => "$src/Foundation/Listeners",
+                        'commands' => $src . '/Foundation/Commands',
+                        'events' => $src . '/Foundation/Events',
+                        'listeners' => $src . '/Foundation/Listeners',
                     ],
                 ],
             ],

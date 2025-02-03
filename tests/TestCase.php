@@ -17,7 +17,7 @@ class TestCase extends PhpUnit
         return Mockery::mock($class);
     }
 
-    public function resourceFilePath($fileName = ''): string
+    public function resourceFilePath(string $fileName = ''): string
     {
         return __DIR__ . $fileName;
     }
@@ -26,7 +26,7 @@ class TestCase extends PhpUnit
     {
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

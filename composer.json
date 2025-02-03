@@ -11,16 +11,16 @@
     ],
     "require": {
         "ext-json": "*",
-        "php": "^7.4|^8.0",
-        "myerscode/utilities-bags": "^1.0|^2.0",
-        "myerscode/utilities-files": "^1.0|^2.0",
-        "myerscode/utilities-strings": "^1.0|^2.0",
-        "symfony/serializer": "^5.4|^6.0",
-        "symfony/yaml": "^5.4|^6.0"
+        "php": "^8.4",
+        "myerscode/utilities-bags": "^2025",
+        "myerscode/utilities-files": "^2025",
+        "myerscode/utilities-strings": "^2025",
+        "symfony/serializer": "^v7.2",
+        "symfony/yaml": "^v7.2"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^11.5",
         "squizlabs/php_codesniffer": "^3.5"
     },
     "autoload": {
