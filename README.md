@@ -20,6 +20,10 @@ You can install this package via composer:
 composer require myerscode/config
 ```
 
+## Requirements
+
+- PHP 8.5+
+
 ## Usage
 
 ### Creating a Config Store
