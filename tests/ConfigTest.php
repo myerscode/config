@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Config\Config;
@@ -8,7 +10,7 @@ use Myerscode\Config\Exceptions\InvalidConfigValueException;
 use Myerscode\Config\Exceptions\ResolveVariablesDecodeException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
-class ConfigTest extends TestCase
+final class ConfigTest extends TestCase
 {
     public function testConfigParsesFile(): void
     {

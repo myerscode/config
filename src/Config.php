@@ -59,7 +59,7 @@ class Config
 
     protected function serialize(array $array): string
     {
-        return (new JsonEncode())->encode(
+        return new JsonEncode()->encode(
             $array,
             JsonEncoder::FORMAT,
             ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
@@ -71,7 +71,7 @@ class Config
      */
     protected function deserialize(string $config): array
     {
-        return (new JsonEncoder())->decode(
+        return new JsonEncoder()->decode(
             $config,
             JsonEncoder::FORMAT,
             ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
@@ -144,7 +144,7 @@ class Config
 
     protected function getFileNameSpace(string $file): string
     {
-        return (new StringService(pathinfo($file, PATHINFO_FILENAME)))->toSnakeCase()->value();
+        return new StringService(pathinfo($file, PATHINFO_FILENAME))->toSnakeCase()->value();
     }
 
     public function loadFiles(array $files): void

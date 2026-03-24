@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Config\Config;
 use Myerscode\Config\Store;
 
-class StoreTest extends TestCase
+final class StoreTest extends TestCase
 {
     public function testCanGetStore(): void
     {
-        $this->assertInstanceOf(Store::class, (new Config())->store());
+        $this->assertInstanceOf(Store::class, new Config()->store());
     }
 
     public function testStoreIsReset(): void
     {
         $config = Config::make()->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'test' => 'value',
                 'setting' => [
@@ -34,6 +36,6 @@ class StoreTest extends TestCase
 
         $config->reset();
 
-        $this->assertEquals([], $config->store()->toArray());
+        $this->assertSame([], $config->store()->toArray());
     }
 }

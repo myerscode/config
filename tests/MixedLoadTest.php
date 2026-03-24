@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Config\Store;
 use Myerscode\Config\Config;
 
-class MixedLoadTest extends TestCase
+final class MixedLoadTest extends TestCase
 {
     public function testCanLoadFromMixedSources(): void
     {

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Config\Config;
 
-class LoadFilesTest extends TestCase
+final class LoadFilesTest extends TestCase
 {
     public function testCanBuildConfigFromMultipleFiles(): void
     {
@@ -15,7 +17,7 @@ class LoadFilesTest extends TestCase
             $this->resourceFilePath('/Resources/multi-config-2.php'),
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'test' => 'value',
                 'example' => 'reference from another file - value',
@@ -33,7 +35,7 @@ class LoadFilesTest extends TestCase
             $this->resourceFilePath('/Resources/settings.yaml'),
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
@@ -48,14 +50,14 @@ class LoadFilesTest extends TestCase
     {
         $config = new Config();
         $config->loadFile('foo.bar');
-        $this->assertEquals([], $config->values());
+        $this->assertSame([], $config->values());
     }
 
     public function testWillNotLoadUnsupportedConfigFileType(): void
     {
         $config = new Config();
         $config->loadFile($this->resourceFilePath('/Resources/config.toml'));
-        $this->assertEquals([], $config->values());
+        $this->assertSame([], $config->values());
     }
 
     public function testFilesCanBeLoadedToNamespaced(): void

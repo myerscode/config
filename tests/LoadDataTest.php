@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Config\Config;
 use Myerscode\Config\Store;
 
-class LoadDataTest extends TestCase
+final class LoadDataTest extends TestCase
 {
     public function testCanLoadDataFromArray(): void
     {
@@ -18,7 +20,7 @@ class LoadDataTest extends TestCase
             'array' => ['a', 'b', 'c'],
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
@@ -40,7 +42,7 @@ class LoadDataTest extends TestCase
 
         $config->loadData($store);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
