@@ -16,13 +16,13 @@ class Config
 {
     public const MAX_RECURSION_LOOPS = 25;
 
-    private ?Store $store = null;
+    private Store $store;
 
     private Store $recursionCounter;
 
     public function __construct()
     {
-        $this->createStore();
+        $this->store = new Store([]);
         $this->resetCounter();
     }
 
@@ -33,51 +33,52 @@ class Config
 
     public function reset(): void
     {
-        $this->store = null;
-        $this->createStore();
-    }
-
-    protected function createStore(): void
-    {
-        if (!isset(self::$store)) {
-            $this->store = new Store([]);
-        }
+        $this->store = new Store([]);
     }
 
     protected function resetCounter(): void
     {
-        unset($this->recursionCounter);
         $this->recursionCounter = new Store([]);
     }
 
-    protected function parseConfigArray($config): array
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
+    protected function parseConfigArray(array $config): array
     {
         $this->resetCounter();
 
         return $this->resolveVariables(new Store($config));
     }
 
+    /**
+     * @param  array<string, mixed>  $array
+     */
     protected function serialize(array $array): string
     {
         return new JsonEncode()->encode(
             $array,
             JsonEncoder::FORMAT,
-            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ],
+            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
         );
     }
 
     /**
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     protected function deserialize(string $config): array
     {
         return new JsonEncoder()->decode(
             $config,
             JsonEncoder::FORMAT,
-            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ],
+            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function resolveVariables(Store $store): array
     {
         $configTemplate = $this->serialize($store->toArray());
@@ -88,17 +89,15 @@ class Config
             return $this->deserialize($updatedTemplate);
         } catch (NotEncodableValueException $notEncodableValueException) {
             throw new ResolveVariablesDecodeException(
-                $store->toArray(),
-                $configTemplate,
                 $updatedTemplate,
                 $notEncodableValueException,
             );
         }
     }
 
-    private function resolveValues(string $template, Store $store): ?string
+    private function resolveValues(string $template, Store $store): string
     {
-        return preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store): string {
+        return (string) preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store): string {
             $configValue = $this->resolveConfigValue($matches[1], $store);
 
             return is_null($configValue) ? $matches[0] : $this->encode($configValue);
@@ -147,6 +146,9 @@ class Config
         return new StringService(pathinfo($file, PATHINFO_FILENAME))->toSnakeCase()->value();
     }
 
+    /**
+     * @param  array<string>  $files
+     */
     public function loadFiles(array $files): void
     {
         $settings = [];
@@ -157,6 +159,9 @@ class Config
         $this->updateConfig($this->parseConfigArray($settings));
     }
 
+    /**
+     * @param  array<string>  $files
+     */
     public function loadFilesWithNamespace(array $files): void
     {
         $settings = [];
@@ -189,11 +194,11 @@ class Config
     }
 
     /**
-     * Load in data from an existing Config or array
+     * Load in data from an existing Config, Store, or array
      *
-     * @param $data
+     * @param  Config|Store|array<string, mixed>  $data
      */
-    public function loadData($data): void
+    public function loadData(Config|Store|array $data): void
     {
         if ($data instanceof Config) {
             $configData = $data->values();
@@ -211,7 +216,7 @@ class Config
     /**
      * Read config from a file and parse it into a usable structure
      *
-     * @param  string  $file  Filepath of config file
+     * @return array<string, mixed>
      */
     protected function getConfigFromFile(string $file): array
     {
@@ -222,14 +227,18 @@ class Config
 
     /**
      * Update the config data store with new values
+     *
+     * @param  array<string, mixed>  $config
      */
     protected function updateConfig(array $config): void
     {
-        $this->store = $this->store->mergeRecursively($config);
+        /** @var Store $merged */
+        $merged = $this->store->mergeRecursively($config);
+        $this->store = $merged;
     }
 
     /**
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     protected function readFile(string $filename): array
     {
@@ -255,23 +264,20 @@ class Config
         return [];
     }
 
-    public function store(): ?Store
+    public function store(): Store
     {
         return $this->store;
     }
 
     /**
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     public function values(): array
     {
         return $this->store()->toArray();
     }
 
-    /**
-     * @return mixed
-     */
-    public function value(string $key, $default = null)
+    public function value(string $key, mixed $default = null): mixed
     {
         return $this->store()->get($key, $default);
     }
@@ -279,7 +285,7 @@ class Config
     /**
      * Get a config value or throw an exception if its not set
      */
-    public function valueOrThrow(string $key)
+    public function valueOrThrow(string $key): mixed
     {
         if ($this->store()->exists($key)) {
             return $this->store()->get($key);
