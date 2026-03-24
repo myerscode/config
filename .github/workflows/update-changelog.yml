@@ -2,29 +2,31 @@ name: Update Changelog
 
 on:
   release:
-    types: [created]
+    types: [released]
+
+permissions:
+  contents: read
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
-    name: Update Changelog
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
         with:
           ref: main
-          fetch-depth: 0
 
       - name: Update Changelog
         uses: stefanzweifel/changelog-updater-action@v1
         with:
-          latest-version: ${{ github.event.release.tag_name }}
+          latest-version: ${{ github.event.release.name }}
           release-notes: ${{ github.event.release.body }}
 
-      - name: Commit updated Changelog
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit updated CHANGELOG
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: main
-          commit_message: "docs: update changelog for ${{ github.event.release.tag_name }}"
+          commit_message: "docs: update CHANGELOG for ${{ github.event.release.name }}"
           file_pattern: CHANGELOG.md

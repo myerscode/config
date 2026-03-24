@@ -1,26 +1,53 @@
 name: Release
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'CalVer version (e.g. 2026.0.0)'
+        required: true
+        type: string
+  push:
+    tags:
+      - '[0-9][0-9][0-9][0-9].*'
+
+permissions:
+  contents: read
 
 jobs:
-  run:
+  release:
     runs-on: ubuntu-latest
-
-    name: Tag Release
+    permissions:
+      contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate CalVer format
+        run: |
+          if ! echo "${{ steps.version.outputs.tag }}" | grep -qE '^[0-9]{4}\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Version must be in CalVer format YYYY.MINOR.PATCH (e.g. 2026.0.0)"
+            exit 1
+          fi
+
+      - name: Create and push tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
         with:
-          php-version: "8.5"
-          coverage: xdebug
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Run test suite
-        run: vendor/bin/phpunit --testdox --no-coverage
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
