@@ -62,7 +62,7 @@ class Config
         return new JsonEncode()->encode(
             $array,
             JsonEncoder::FORMAT,
-            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
+            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ],
         );
     }
 
@@ -74,7 +74,7 @@ class Config
         return new JsonEncoder()->decode(
             $config,
             JsonEncoder::FORMAT,
-            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ]
+            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS ],
         );
     }
 
@@ -91,7 +91,7 @@ class Config
                 $store->toArray(),
                 $configTemplate,
                 $updatedTemplate,
-                $notEncodableValueException
+                $notEncodableValueException,
             );
         }
     }

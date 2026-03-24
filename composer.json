@@ -19,7 +19,9 @@
         "symfony/yaml": "^v7.2"
     },
     "require-dev": {
+        "laravel/pint": "^1.29",
         "mockery/mockery": "^1.4",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^13.0"
     },
     "autoload": {
@@ -38,9 +40,10 @@
         "sort-packages": true
     },
     "scripts": {
+        "lint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse",
         "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
-        "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
-        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12",
-        "phpcbf": "vendor/bin/phpcbf"
+        "test-coverage": "vendor/bin/phpunit --testdox --colors=always",
+        "security-audit": "@composer audit"
     }
 }

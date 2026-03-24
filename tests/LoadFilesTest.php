@@ -22,7 +22,7 @@ final class LoadFilesTest extends TestCase
                 'test' => 'value',
                 'example' => 'reference from another file - value',
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -42,7 +42,7 @@ final class LoadFilesTest extends TestCase
                 'setting' => 'foo bar',
                 'array' => ['a', 'b', 'c'],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -81,7 +81,7 @@ final class LoadFilesTest extends TestCase
 
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
 
         $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
@@ -99,7 +99,7 @@ final class LoadFilesTest extends TestCase
                     'version' => '7749',
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
 
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/db.php'));
@@ -117,7 +117,7 @@ final class LoadFilesTest extends TestCase
 
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
 
         $this->assertEquals('myerscode_db', $config->store()->get('db.name'));
@@ -133,7 +133,7 @@ final class LoadFilesTest extends TestCase
                     'abc' => '123',
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -147,7 +147,7 @@ final class LoadFilesTest extends TestCase
                     'abc' => '123',
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 }

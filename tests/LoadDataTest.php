@@ -27,7 +27,7 @@ final class LoadDataTest extends TestCase
                 'setting' => 'foo bar',
                 'array' => ['a', 'b', 'c'],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -47,7 +47,7 @@ final class LoadDataTest extends TestCase
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -70,7 +70,7 @@ final class LoadDataTest extends TestCase
                 'foo' => 'bar',
                 'bar' => ['foo' => 'bar', 'hello' => 'world'],
             ],
-            $configTwo->values()
+            $configTwo->values(),
         );
     }
 
@@ -99,7 +99,7 @@ final class LoadDataTest extends TestCase
         ];
 
         foreach ($escapedCharacters as $escapedCharacter => $value) {
-            $this->assertEquals($value, $config->value('special.escaped_characters.' . $escapedCharacter),);
+            $this->assertEquals($value, $config->value('special.escaped_characters.' . $escapedCharacter), );
         }
     }
 

@@ -31,7 +31,7 @@ final class StoreTest extends TestCase
                     'hello' => 'world',
                 ],
             ],
-            $config->store()->toArray()
+            $config->store()->toArray(),
         );
 
         $config->reset();

@@ -3,7 +3,7 @@
 return [
     'invalid' => [
         'foo',
-        'bar'
+        'bar',
     ],
     'ref' => '${invalid}',
 ];

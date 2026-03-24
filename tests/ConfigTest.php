@@ -31,7 +31,7 @@ final class ConfigTest extends TestCase
                     'hello' => 'world',
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -53,7 +53,7 @@ final class ConfigTest extends TestCase
                 ],
                 'dotaccessor' => 'hello world',
             ],
-            $config->values()
+            $config->values(),
         );
     }
 
@@ -69,7 +69,7 @@ final class ConfigTest extends TestCase
                 'hello' => 'world',
                 'ref' => '${invalid}',
             ],
-            $config->values()
+            $config->values(),
         );
     }
 

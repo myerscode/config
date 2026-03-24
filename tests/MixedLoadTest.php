@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Myerscode\Config\Store;
 use Myerscode\Config\Config;
+use Myerscode\Config\Store;
 
 final class MixedLoadTest extends TestCase
 {
@@ -55,7 +55,7 @@ final class MixedLoadTest extends TestCase
                     ],
                 ],
             ],
-            $config->values()
+            $config->values(),
         );
     }
 }

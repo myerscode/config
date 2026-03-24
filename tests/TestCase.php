@@ -24,9 +24,7 @@ class TestCase extends PhpUnit
         return __DIR__ . $fileName;
     }
 
-    protected function setUp(): void
-    {
-    }
+    protected function setUp(): void {}
 
     protected function tearDown(): void
     {

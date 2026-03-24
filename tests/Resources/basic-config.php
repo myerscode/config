@@ -5,10 +5,10 @@ return [
     'setting' => [
         'a',
         'b',
-        'c'
+        'c',
     ],
     'Config' => [
         'foo' => 'bar',
         'hello' => 'world',
-    ]
+    ],
 ];

@@ -6,8 +6,8 @@ return [
     'nested' => [
         'foobar' => 'foo${foo}',
         'deeper' => [
-            'setting' => '${world} world'
-        ]
+            'setting' => '${world} world',
+        ],
     ],
-    'dotaccessor' => '${nested.deeper.setting}'
+    'dotaccessor' => '${nested.deeper.setting}',
 ];

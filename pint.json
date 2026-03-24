@@ -1,0 +1,20 @@
+{
+    "preset": "per",
+    "rules": {
+        "concat_space": {
+            "spacing": "one"
+        },
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "single_trait_insert_per_statement": true,
+        "trailing_comma_in_multiline": {
+            "elements": [
+                "arguments",
+                "arrays",
+                "match",
+                "parameters"
+            ]
+        }
+    }
+}
