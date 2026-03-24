@@ -1,5 +1,6 @@
 vendor
 composer.lock
 coverage
+coverage.xml
 logs
 .reports

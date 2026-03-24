@@ -1,16 +1,14 @@
-name: codecov
+name: Release
 
 on:
-  schedule:
-    - cron: "0 0 * * *"
-  push:
-    branches: [main]
+  release:
+    types: [created]
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
-    name: Code Coverage
+    name: Tag Release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,11 +23,4 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run test suite
-        run: vendor/bin/phpunit --testdox --coverage-clover ./coverage.xml
-
-      - name: Code Coverage
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          verbose: true
+        run: vendor/bin/phpunit --testdox --no-coverage
