@@ -11,7 +11,7 @@
     ],
     "require": {
         "ext-json": "*",
-        "php": "^8.4",
+        "php": "^8.5",
         "myerscode/utilities-bags": "^2025",
         "myerscode/utilities-files": "^2025",
         "myerscode/utilities-strings": "^2025",
