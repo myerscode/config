@@ -232,9 +232,9 @@ class Config
      */
     protected function updateConfig(array $config): void
     {
-        /** @var Store $merged */
-        $merged = $this->store->mergeRecursively($config);
-        $this->store = $merged;
+        /** @var Store $utility */
+        $utility = $this->store->mergeRecursively($config);
+        $this->store = $utility;
     }
 
     /**

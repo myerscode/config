@@ -68,11 +68,11 @@ final class LoadFilesTest extends TestCase
             $this->resourceFilePath('/Resources/db.php'),
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'app' => [
                     'name' => 'myerscode',
-                    'version' => '7749',
+                    'version' => 7749,
                 ],
                 'db' => [
                     'name' => 'myerscode_db',
@@ -92,11 +92,11 @@ final class LoadFilesTest extends TestCase
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/app.php'));
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'app' => [
                     'name' => 'myerscode',
-                    'version' => '7749',
+                    'version' => 7749,
                 ],
             ],
             $config->values(),
@@ -104,11 +104,11 @@ final class LoadFilesTest extends TestCase
 
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/db.php'));
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'app' => [
                     'name' => 'myerscode',
-                    'version' => '7749',
+                    'version' => 7749,
                 ],
                 'db' => [
                     'name' => 'myerscode_db',
@@ -127,10 +127,10 @@ final class LoadFilesTest extends TestCase
     {
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/Settings.php'));
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'settings' => [
-                    'abc' => '123',
+                    'abc' => 123,
                 ],
             ],
             $config->values(),
@@ -141,10 +141,10 @@ final class LoadFilesTest extends TestCase
     {
         $config = new Config();
         $config->loadFileWithNamespace($this->resourceFilePath('/Resources/AppSettings.php'));
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'app_settings' => [
-                    'abc' => '123',
+                    'abc' => 123,
                 ],
             ],
             $config->values(),

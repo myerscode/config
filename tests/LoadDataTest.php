@@ -65,10 +65,10 @@ final class LoadDataTest extends TestCase
 
         $configTwo->loadData($configOne);
 
-        $this->assertEquals(
+        $this->assertSame(
             [
+                'bar' => ['hello' => 'world', 'foo' => 'bar'],
                 'foo' => 'bar',
-                'bar' => ['foo' => 'bar', 'hello' => 'world'],
             ],
             $configTwo->values(),
         );
