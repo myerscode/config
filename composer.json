@@ -12,11 +12,11 @@
     "require": {
         "ext-json": "*",
         "php": "^8.5",
-        "myerscode/utilities-bags": "^2025",
-        "myerscode/utilities-files": "^2025",
-        "myerscode/utilities-strings": "^2025",
-        "symfony/serializer": "^v7.2",
-        "symfony/yaml": "^v7.2"
+        "myerscode/utilities-bags": "^2026",
+        "myerscode/utilities-files": "^2026",
+        "myerscode/utilities-strings": "^2026",
+        "symfony/serializer": "^8.0",
+        "symfony/yaml": "^8.0"
     },
     "require-dev": {
         "laravel/pint": "^1.29",
