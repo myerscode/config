@@ -9,14 +9,19 @@ use PHPUnit\Framework\TestCase as PhpUnit;
 
 class TestCase extends PhpUnit
 {
+    protected function setUp(): void
+    {
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        Mockery::close();
+    }
     public function mock($class, $constructorArgs = [])
     {
         return Mockery::mock($class, $constructorArgs);
-    }
-
-    public function stub($class)
-    {
-        return Mockery::mock($class);
     }
 
     public function resourceFilePath(string $fileName = ''): string
@@ -24,12 +29,8 @@ class TestCase extends PhpUnit
         return __DIR__ . $fileName;
     }
 
-    protected function setUp(): void {}
-
-    protected function tearDown(): void
+    public function stub($class)
     {
-        parent::tearDown();
-
-        Mockery::close();
+        return Mockery::mock($class);
     }
 }

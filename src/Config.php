@@ -16,9 +16,9 @@ class Config
 {
     public const MAX_RECURSION_LOOPS = 25;
 
-    private Store $store;
-
     private Store $recursionCounter;
+
+    private Store $store;
 
     public function __construct()
     {
@@ -31,119 +31,33 @@ class Config
         return new self();
     }
 
-    public function reset(): void
-    {
-        $this->store = new Store([]);
-    }
-
-    protected function resetCounter(): void
-    {
-        $this->recursionCounter = new Store([]);
-    }
-
     /**
-     * @param  array<string, mixed>  $config
-     * @return array<string, mixed>
+     * Load in data from an existing Config, Store, or array
+     *
+     * @param  Config|Store|array<string, mixed>  $data
      */
-    protected function parseConfigArray(array $config): array
+    public function loadData(Config|Store|array $data): void
     {
-        $this->resetCounter();
-
-        return $this->resolveVariables(new Store($config));
-    }
-
-    /**
-     * @param  array<string, mixed>  $array
-     */
-    protected function serialize(array $array): string
-    {
-        return new JsonEncode()->encode(
-            $array,
-            JsonEncoder::FORMAT,
-            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function deserialize(string $config): array
-    {
-        return new JsonEncoder()->decode(
-            $config,
-            JsonEncoder::FORMAT,
-            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
-        );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function resolveVariables(Store $store): array
-    {
-        $configTemplate = $this->serialize($store->toArray());
-
-        $updatedTemplate = $this->resolveValues($configTemplate, $store);
-
-        try {
-            return $this->deserialize($updatedTemplate);
-        } catch (NotEncodableValueException $notEncodableValueException) {
-            throw new ResolveVariablesDecodeException(
-                $updatedTemplate,
-                $notEncodableValueException,
-            );
-        }
-    }
-
-    private function resolveValues(string $template, Store $store): string
-    {
-        return (string) preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store): string {
-            $configValue = $this->resolveConfigValue($matches[1], $store);
-
-            return is_null($configValue) ? $matches[0] : $this->encode($configValue);
-        }, $template);
-    }
-
-    private function resolveConfigValue(string $key, Store $store): ?string
-    {
-        $this->recursionCounter->set($key, $this->recursionCounter->get($key, 0) + 1);
-
-        if ($this->recursionCounter->get($key) >= Config::MAX_RECURSION_LOOPS) {
-            throw new ConfigException(sprintf('Config key %s is referencing a value which has a caused a recursion error', $key));
+        if ($data instanceof Config) {
+            $configData = $data->values();
+        } elseif ($data instanceof Store) {
+            $configData = $data->toArray();
+        } else {
+            $configData = $data;
         }
 
-        $value = $store->get($key);
+        $config = $this->parseConfigArray($configData);
 
-        if (is_null($value) && is_null($value = $this->store()->get($key))) {
-            return null;
-        }
-
-        if (!is_string($value)) {
-            throw new ConfigException("A config value can only reference another string");
-        }
-
-        return $this->decode($this->resolveValues($value, $store));
+        $this->updateConfig($config);
     }
 
-    private function encode(string $value): string
+    public function loadFile(string $file): self
     {
-        $escape = ["\\", "/", '"', "\n", "\r", "\T", "\x08", "\x0c"];
-        $with = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\T", "\\f", "\\b"];
+        $config = $this->getConfigFromFile($file);
 
-        return str_replace($escape, $with, $value);
-    }
+        $this->updateConfig($config);
 
-    private function decode(string $value): string
-    {
-        $escape = ["\\\\", "\\/", "\\\"", "\\n", "\\r", "\\T", "\\f", "\\b"];
-        $with = ["\\", "/", '"', "\n", "\r", "\T", "\x08", "\x0c"];
-
-        return str_replace($escape, $with, $value);
-    }
-
-    protected function getFileNameSpace(string $file): string
-    {
-        return new StringService(pathinfo($file, PATHINFO_FILENAME))->toSnakeCase()->value();
+        return $this;
     }
 
     /**
@@ -173,15 +87,6 @@ class Config
         $this->updateConfig($this->parseConfigArray($settings));
     }
 
-    public function loadFile(string $file): self
-    {
-        $config = $this->getConfigFromFile($file);
-
-        $this->updateConfig($config);
-
-        return $this;
-    }
-
     public function loadFileWithNameSpace(string $file): self
     {
         $settingNamespace = $this->getFileNameSpace($file);
@@ -193,24 +98,51 @@ class Config
         return $this;
     }
 
-    /**
-     * Load in data from an existing Config, Store, or array
-     *
-     * @param  Config|Store|array<string, mixed>  $data
-     */
-    public function loadData(Config|Store|array $data): void
+    public function reset(): void
     {
-        if ($data instanceof Config) {
-            $configData = $data->values();
-        } elseif ($data instanceof Store) {
-            $configData = $data->toArray();
-        } else {
-            $configData = $data;
+        $this->store = new Store([]);
+    }
+
+    public function store(): Store
+    {
+        return $this->store;
+    }
+
+    public function value(string $key, mixed $default = null): mixed
+    {
+        return $this->store()->get($key, $default);
+    }
+
+    /**
+     * Get a config value or throw an exception if its not set
+     */
+    public function valueOrThrow(string $key): mixed
+    {
+        if ($this->store()->exists($key)) {
+            return $this->store()->get($key);
         }
 
-        $config = $this->parseConfigArray($configData);
+        throw new InvalidConfigValueException('There is no config value set for key: ' . $key);
+    }
 
-        $this->updateConfig($config);
+    /**
+     * @return array<string, mixed>
+     */
+    public function values(): array
+    {
+        return $this->store()->toArray();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function deserialize(string $config): array
+    {
+        return new JsonEncoder()->decode(
+            $config,
+            JsonEncoder::FORMAT,
+            ['json_decode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
+        );
     }
 
     /**
@@ -225,16 +157,20 @@ class Config
         return $this->parseConfigArray($settings);
     }
 
-    /**
-     * Update the config data store with new values
-     *
-     * @param  array<string, mixed>  $config
-     */
-    protected function updateConfig(array $config): void
+    protected function getFileNameSpace(string $file): string
     {
-        /** @var Store $utility */
-        $utility = $this->store->mergeRecursively($config);
-        $this->store = $utility;
+        return new StringService(pathinfo($file, PATHINFO_FILENAME))->toSnakeCase()->value();
+    }
+
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
+    protected function parseConfigArray(array $config): array
+    {
+        $this->resetCounter();
+
+        return $this->resolveVariables(new Store($config));
     }
 
     /**
@@ -264,33 +200,97 @@ class Config
         return [];
     }
 
-    public function store(): Store
+    protected function resetCounter(): void
     {
-        return $this->store;
+        $this->recursionCounter = new Store([]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $array
+     */
+    protected function serialize(array $array): string
+    {
+        return new JsonEncode()->encode(
+            $array,
+            JsonEncoder::FORMAT,
+            ['json_encode_options' => JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS],
+        );
+    }
+
+    /**
+     * Update the config data store with new values
+     *
+     * @param  array<string, mixed>  $config
+     */
+    protected function updateConfig(array $config): void
+    {
+        /** @var Store $utility */
+        $utility = $this->store->mergeRecursively($config);
+        $this->store = $utility;
+    }
+
+    private function decode(string $value): string
+    {
+        $escape = ['\\\\', '\\/', '\\"', '\\n', '\\r', '\\T', '\\f', '\\b'];
+        $with = ['\\', '/', '"', "\n", "\r", "\T", "\x08", "\x0c"];
+
+        return str_replace($escape, $with, $value);
+    }
+
+    private function encode(string $value): string
+    {
+        $escape = ['\\', '/', '"', "\n", "\r", "\T", "\x08", "\x0c"];
+        $with = ['\\\\', '\\/', '\\"', '\\n', '\\r', '\\T', '\\f', '\\b'];
+
+        return str_replace($escape, $with, $value);
+    }
+
+    private function resolveConfigValue(string $key, Store $store): ?string
+    {
+        $this->recursionCounter->set($key, $this->recursionCounter->get($key, 0) + 1);
+
+        if ($this->recursionCounter->get($key) >= Config::MAX_RECURSION_LOOPS) {
+            throw new ConfigException(sprintf('Config key %s is referencing a value which has a caused a recursion error', $key));
+        }
+
+        $value = $store->get($key);
+
+        if (is_null($value) && is_null($value = $this->store()->get($key))) {
+            return null;
+        }
+
+        if (!is_string($value)) {
+            throw new ConfigException('A config value can only reference another string');
+        }
+
+        return $this->decode($this->resolveValues($value, $store));
+    }
+
+    private function resolveValues(string $template, Store $store): string
+    {
+        return (string) preg_replace_callback('#\${([a-zA-Z0-9_.]+)}#', function (array $matches) use ($store): string {
+            $configValue = $this->resolveConfigValue($matches[1], $store);
+
+            return is_null($configValue) ? $matches[0] : $this->encode($configValue);
+        }, $template);
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function values(): array
+    private function resolveVariables(Store $store): array
     {
-        return $this->store()->toArray();
-    }
+        $configTemplate = $this->serialize($store->toArray());
 
-    public function value(string $key, mixed $default = null): mixed
-    {
-        return $this->store()->get($key, $default);
-    }
+        $updatedTemplate = $this->resolveValues($configTemplate, $store);
 
-    /**
-     * Get a config value or throw an exception if its not set
-     */
-    public function valueOrThrow(string $key): mixed
-    {
-        if ($this->store()->exists($key)) {
-            return $this->store()->get($key);
+        try {
+            return $this->deserialize($updatedTemplate);
+        } catch (NotEncodableValueException $notEncodableValueException) {
+            throw new ResolveVariablesDecodeException(
+                $updatedTemplate,
+                $notEncodableValueException,
+            );
         }
-
-        throw new InvalidConfigValueException('There is no config value set for key: ' . $key);
     }
 }

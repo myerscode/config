@@ -12,6 +12,56 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 final class ConfigTest extends TestCase
 {
+    public function testConfigFindsValues(): void
+    {
+        $config = $this->mock(Config::class)->makePartial();
+
+        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
+
+        $this->assertEquals('value', $config->value('test'));
+        $this->assertEquals(['a', 'b', 'c'], $config->value('setting'));
+        $this->assertEquals('a', $config->value('setting.0'));
+        $this->assertEquals('world', $config->value('Config.hello'));
+    }
+
+    public function testConfigHandlesConfigFileNotExisting(): void
+    {
+        $config = $this->mock(Config::class)->makePartial();
+        $config->loadFile('foobar.php');
+        $this->assertEquals([], $config->values());
+    }
+
+    public function testConfigHandlesInfiniteRecursion(): void
+    {
+        $config = $this->mock(Config::class)->makePartial();
+        $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('Config key hello is referencing a value which has a caused a recursion error');
+        $config->loadFile($this->resourceFilePath('/Resources/recursion-config.php'));
+    }
+
+    public function testConfigHandlesNoneStringReference(): void
+    {
+        $config = $this->mock(Config::class)->makePartial();
+        $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('A config value can only reference another string');
+        $config->loadFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
+    }
+
+    public function testConfigLeavesUnknownReferences(): void
+    {
+        $config = $this->mock(Config::class)->makePartial();
+
+        $config->loadFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
+
+        $this->assertEquals(
+            [
+                'foo' => 'bar',
+                'hello' => 'world',
+                'ref' => '${invalid}',
+            ],
+            $config->values(),
+        );
+    }
     public function testConfigParsesFile(): void
     {
         $config = $this->mock(Config::class)->makePartial();
@@ -57,57 +107,6 @@ final class ConfigTest extends TestCase
         );
     }
 
-    public function testConfigLeavesUnknownReferences(): void
-    {
-        $config = $this->mock(Config::class)->makePartial();
-
-        $config->loadFile($this->resourceFilePath('/Resources/unknown-ref-config.php'));
-
-        $this->assertEquals(
-            [
-                'foo' => 'bar',
-                'hello' => 'world',
-                'ref' => '${invalid}',
-            ],
-            $config->values(),
-        );
-    }
-
-    public function testConfigFindsValues(): void
-    {
-        $config = $this->mock(Config::class)->makePartial();
-
-        $config->loadFile($this->resourceFilePath('/Resources/basic-config.php'));
-
-        $this->assertEquals('value', $config->value('test'));
-        $this->assertEquals(['a', 'b', 'c'], $config->value('setting'));
-        $this->assertEquals('a', $config->value('setting.0'));
-        $this->assertEquals('world', $config->value('Config.hello'));
-    }
-
-    public function testConfigHandlesInfiniteRecursion(): void
-    {
-        $config = $this->mock(Config::class)->makePartial();
-        $this->expectException(ConfigException::class);
-        $this->expectExceptionMessage("Config key hello is referencing a value which has a caused a recursion error");
-        $config->loadFile($this->resourceFilePath('/Resources/recursion-config.php'));
-    }
-
-    public function testConfigHandlesNoneStringReference(): void
-    {
-        $config = $this->mock(Config::class)->makePartial();
-        $this->expectException(ConfigException::class);
-        $this->expectExceptionMessage("A config value can only reference another string");
-        $config->loadFile($this->resourceFilePath('/Resources/invalid-ref-config.php'));
-    }
-
-    public function testConfigHandlesConfigFileNotExisting(): void
-    {
-        $config = $this->mock(Config::class)->makePartial();
-        $config->loadFile('foobar.php');
-        $this->assertEquals([], $config->values());
-    }
-
     public function testThrowsExceptionIfCannotEncodeResolvedConfig(): void
     {
         $config = $this->mock(Config::class)->makePartial()->shouldAllowMockingProtectedMethods();
@@ -131,7 +130,7 @@ final class ConfigTest extends TestCase
     public function testValueOrThrowCanThrowExceptionIfAccessorNotSet(): void
     {
         $this->expectException(InvalidConfigValueException::class);
-        $this->expectExceptionMessage("There is no config value set for key: hello");
+        $this->expectExceptionMessage('There is no config value set for key: hello');
 
         $config = new Config();
 

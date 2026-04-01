@@ -31,26 +31,6 @@ final class LoadDataTest extends TestCase
         );
     }
 
-    public function testCanLoadDataFromExistingStore(): void
-    {
-        $store = new Store([
-            'foo' => 'bar',
-            'bar' => ['foo' => 'bar', 'hello' => 'world'],
-        ]);
-
-        $config = new Config();
-
-        $config->loadData($store);
-
-        $this->assertSame(
-            [
-                'foo' => 'bar',
-                'bar' => ['foo' => 'bar', 'hello' => 'world'],
-            ],
-            $config->values(),
-        );
-    }
-
     public function testCanLoadDataFromExistingConfig(): void
     {
         $configOne = new Config();
@@ -74,6 +54,26 @@ final class LoadDataTest extends TestCase
         );
     }
 
+    public function testCanLoadDataFromExistingStore(): void
+    {
+        $store = new Store([
+            'foo' => 'bar',
+            'bar' => ['foo' => 'bar', 'hello' => 'world'],
+        ]);
+
+        $config = new Config();
+
+        $config->loadData($store);
+
+        $this->assertSame(
+            [
+                'foo' => 'bar',
+                'bar' => ['foo' => 'bar', 'hello' => 'world'],
+            ],
+            $config->values(),
+        );
+    }
+
     public function testCanLoadDataWithEscapedCharacters(): void
     {
         $config = new Config();
@@ -89,7 +89,7 @@ final class LoadDataTest extends TestCase
         $escapedCharacters = [
             'newline' => "string\nwith a newline character.",
             'tab' => "string\twith a tab character.",
-            'backslash' => "string with a backslash: \\.",
+            'backslash' => 'string with a backslash: \\.',
             'double_quotes' => 'string with double quotes: "Hello, World!"',
             'single_quotes' => "string with single quotes: 'Hello, World!'",
             'unicode_escape' => "string with a Unicode encode: \\u00A9 (\u00A9)",
