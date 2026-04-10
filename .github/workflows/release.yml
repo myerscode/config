@@ -4,9 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'CalVer version (e.g. 2026.0.0)'
+        description: 'Version (e.g. 2026.0.0 or 1.2.3)'
         required: true
         type: string
+      scheme:
+        description: 'Version scheme'
+        required: true
+        type: choice
+        options:
+          - calver
+          - semver
+        default: calver
   push:
     tags:
       - '[0-9][0-9][0-9][0-9].*'
@@ -27,20 +35,37 @@ jobs:
           token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
-      - name: Determine version
+      - name: Determine version and scheme
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+            TAG="${{ github.event.inputs.version }}"
+            SCHEME="${{ github.event.inputs.scheme }}"
           else
-            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            TAG="${GITHUB_REF_NAME}"
+            if echo "$TAG" | grep -qE '^[0-9]{4}\.[0-9]+\.[0-9]+$'; then
+              SCHEME="calver"
+            else
+              SCHEME="semver"
+            fi
           fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
 
-      - name: Validate CalVer format
+      - name: Validate version format
         run: |
-          if ! echo "${{ steps.version.outputs.tag }}" | grep -qE '^[0-9]{4}\.[0-9]+\.[0-9]+$'; then
-            echo "Error: Version must be in CalVer format YYYY.MINOR.PATCH (e.g. 2026.0.0)"
-            exit 1
+          TAG="${{ steps.version.outputs.tag }}"
+          SCHEME="${{ steps.version.outputs.scheme }}"
+          if [ "$SCHEME" = "calver" ]; then
+            if ! echo "$TAG" | grep -qE '^[0-9]{4}\.[0-9]+\.[0-9]+$'; then
+              echo "Error: Version must be in CalVer format YYYY.MINOR.PATCH (e.g. 2026.0.0)"
+              exit 1
+            fi
+          else
+            if ! echo "$TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "Error: Version must be in SemVer format MAJOR.MINOR.PATCH (e.g. 1.2.3)"
+              exit 1
+            fi
           fi
 
       - name: Create and push tag
@@ -52,10 +77,18 @@ jobs:
       - name: Get previous tag
         id: previous
         run: |
-          PREVIOUS=$(git tag --sort=-v:refname | grep -E '^[0-9]{4}\.' | grep -v "^${{ steps.version.outputs.tag }}$" | head -1)
-          echo "tag=$PREVIOUS" >> "$GITHUB_OUTPUT"
+          CURRENT="${{ steps.version.outputs.tag }}"
+          PREVIOUS=$(git tag --list --sort=-version:refname '[0-9]*' | grep -v "^${CURRENT}$" | head -1)
+          if [ -n "$PREVIOUS" ]; then
+            echo "tag=$PREVIOUS" >> "$GITHUB_OUTPUT"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate changelog
+        if: steps.previous.outputs.found == 'true'
         id: changelog
         uses: requarks/changelog-action@v1
         with:
@@ -71,9 +104,10 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
-          body: ${{ steps.changelog.outputs.changes }}
+          body: ${{ steps.changelog.outputs.changes || 'Initial release' }}
 
       - name: Write changelog to file
+        if: steps.previous.outputs.found == 'true'
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
@@ -84,6 +118,7 @@ jobs:
           writeToFile: true
 
       - name: Commit updated CHANGELOG
+        if: steps.previous.outputs.found == 'true'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           branch: main
