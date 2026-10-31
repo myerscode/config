@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Calendar Versioning](https://calver.org/).
 
+## [2026.0.1] - 2026-10-31
+### New Features
+- [`1334e46`](https://github.com/myerscode/config/commit/1334e461331042f813195537bfec681111f46037) - **ci**: add shared dependabot auto-merge *(PR [#5](https://github.com/myerscode/config/pull/5) by [@oniice](https://github.com/oniice))*
+
+
 ## [2026.0.0] - 2026-04-10
 ### Bug Fixes
 - [`44c6050`](https://github.com/myerscode/config/commit/44c60506e6a6135e5d76b1a6dbfba0e61dbc3b56) - **github**: only run tests and codecov on php84 *(commit by [@oniice](https://github.com/oniice))*
@@ -22,3 +27,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [`3f799d1`](https://github.com/myerscode/config/commit/3f799d1e746b198cfa121730a6d64f82642d139d) tests(core): added tests for string with \T
 - [`e90b52b`](https://github.com/myerscode/config/commit/e90b52be0944c206fd46322b25ef076f762831c8) tests(github): added code coverage reporting
 [2026.0.0]: https://github.com/myerscode/config/compare/2025.0.0...2026.0.0
+[2026.0.1]: https://github.com/myerscode/config/compare/2026.0.0...2026.0.1
